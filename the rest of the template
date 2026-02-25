@@ -1,0 +1,1674 @@
+Continuing where we left off! Here's the rest of the template:
+
+---
+
+## 14. `src/components/AIChat/AIChat.css` (continued)
+
+```css
+/* ... continuing from previous */
+
+.ai-chat__input-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px 16px;
+  background: linear-gradient(to top, #0f0f1a 80%, transparent);
+  padding-top: 24px;
+}
+
+.ai-chat__input-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: #1e1e2e;
+  border: 1px solid #313244;
+  border-radius: 24px;
+  padding: 8px 12px;
+  transition: border-color 0.2s;
+}
+
+.ai-chat__input-wrapper:focus-within {
+  border-color: #8b5cf6;
+}
+
+.ai-chat__textarea {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 16px; /* Prevents iOS zoom */
+  line-height: 1.5;
+  resize: none;
+  outline: none;
+  max-height: 120px;
+  min-height: 24px;
+}
+
+.ai-chat__textarea::placeholder {
+  color: #6c7086;
+}
+
+.ai-chat__send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  flex-shrink: 0;
+}
+
+.ai-chat__send-btn:hover:not(:disabled) {
+  background: #7c3aed;
+}
+
+.ai-chat__send-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.ai-chat__send-btn:disabled {
+  background: #313244;
+  cursor: not-allowed;
+}
+
+.ai-chat__footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.ai-chat__remaining {
+  font-size: 0.75rem;
+  color: #6c7086;
+}
+
+/* Message Bubble */
+.message-bubble {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  max-width: 100%;
+}
+
+.message-bubble--user {
+  flex-direction: row-reverse;
+}
+
+.message-bubble__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.message-bubble--user .message-bubble__avatar {
+  background: #8b5cf6;
+  color: #fff;
+}
+
+.message-bubble--assistant .message-bubble__avatar {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.message-bubble__content {
+  flex: 1;
+  background: #1e1e2e;
+  border-radius: 16px;
+  padding: 12px 16px;
+  color: #cdd6f4;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+
+.message-bubble--user .message-bubble__content {
+  background: #8b5cf6;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.message-bubble--assistant .message-bubble__content {
+  border-bottom-left-radius: 4px;
+}
+
+.message-bubble__code-block {
+  background: #11111b;
+  border-radius: 8px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.message-bubble__code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #181825;
+  font-size: 0.75rem;
+  color: #6c7086;
+}
+
+.message-bubble__code-copy {
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.message-bubble__code-block pre {
+  padding: 12px;
+  overflow-x: auto;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.message-bubble__code-block code {
+  font-family: 'Fira Code', monospace;
+  color: #a6e3a1;
+}
+
+.message-bubble__apply-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 16px;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  justify-content: center;
+}
+
+.message-bubble__apply-btn:hover {
+  background: #16a34a;
+}
+
+.message-bubble__copy {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.message-bubble:hover .message-bubble__copy {
+  opacity: 1;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .ai-chat__messages {
+    padding: 12px;
+  }
+
+  .message-bubble__avatar {
+    width: 28px;
+    height: 28px;
+  }
+
+  .message-bubble__content {
+    padding: 10px 12px;
+  }
+
+  .ai-chat__input-area {
+    padding: 8px 12px;
+  }
+}
+```
+
+---
+
+## 15. `src/components/FileExplorer/FileExplorer.tsx`
+
+```tsx
+import React, { useState, useCallback } from 'react';
+import { 
+  Folder, 
+  FolderOpen, 
+  File, 
+  FileCode, 
+  FileJson,
+  FilePlus,
+  FolderPlus,
+  Trash2,
+  ChevronRight,
+  ChevronDown,
+} from 'lucide-react';
+import type { FileNode } from '../../types';
+import './FileExplorer.css';
+
+interface FileExplorerProps {
+  files: FileNode[];
+  selectedFile: string | null;
+  onSelectFile: (path: string) => void;
+  onCreateFile: (parentPath: string, name: string) => void;
+  onCreateFolder: (parentPath: string, name: string) => void;
+  onDeleteFile: (path: string) => void;
+  className?: string;
+}
+
+const getFileIcon = (filename: string) => {
+  const ext = filename.split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'js':
+    case 'jsx':
+    case 'ts':
+    case 'tsx':
+      return <FileCode size={16} className="file-icon--code" />;
+    case 'json':
+      return <FileJson size={16} className="file-icon--json" />;
+    case 'css':
+    case 'scss':
+      return <FileCode size={16} className="file-icon--css" />;
+    case 'html':
+      return <FileCode size={16} className="file-icon--html" />;
+    default:
+      return <File size={16} />;
+  }
+};
+
+interface FileTreeItemProps {
+  node: FileNode;
+  depth: number;
+  selectedFile: string | null;
+  onSelectFile: (path: string) => void;
+  onCreateFile: (parentPath: string, name: string) => void;
+  onCreateFolder: (parentPath: string, name: string) => void;
+  onDeleteFile: (path: string) => void;
+}
+
+const FileTreeItem: React.FC<FileTreeItemProps> = ({
+  node,
+  depth,
+  selectedFile,
+  onSelectFile,
+  onCreateFile,
+  onCreateFolder,
+  onDeleteFile,
+}) => {
+  const [isExpanded, setIsExpanded] = useState(depth < 2);
+  const [showActions, setShowActions] = useState(false);
+
+  const handleClick = useCallback(() => {
+    if (node.type === 'directory') {
+      setIsExpanded(!isExpanded);
+    } else {
+      onSelectFile(node.path);
+    }
+  }, [node, isExpanded, onSelectFile]);
+
+  const isSelected = selectedFile === node.path;
+
+  return (
+    <div className="file-tree-item">
+      <div
+        className={`file-tree-item__row ${isSelected ? 'file-tree-item__row--selected' : ''}`}
+        style={{ paddingLeft: `${depth * 16 + 8}px` }}
+        onClick={handleClick}
+        onMouseEnter={() => setShowActions(true)}
+        onMouseLeave={() => setShowActions(false)}
+        onTouchStart={() => setShowActions(true)}
+      >
+        {node.type === 'directory' && (
+          <span className="file-tree-item__chevron">
+            {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+          </span>
+        )}
+        
+        <span className="file-tree-item__icon">
+          {node.type === 'directory' 
+            ? (isExpanded ? <FolderOpen size={16} /> : <Folder size={16} />)
+            : getFileIcon(node.name)
+          }
+        </span>
+        
+        <span className="file-tree-item__name">{node.name}</span>
+        
+        {showActions && (
+          <div className="file-tree-item__actions">
+            {node.type === 'directory' && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const name = prompt('File name:');
+                    if (name) onCreateFile(node.path, name);
+                  }}
+                  title="New file"
+                >
+                  <FilePlus size={14} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const name = prompt('Folder name:');
+                    if (name) onCreateFolder(node.path, name);
+                  }}
+                  title="New folder"
+                >
+                  <FolderPlus size={14} />
+                </button>
+              </>
+            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm(`Delete ${node.name}?`)) {
+                  onDeleteFile(node.path);
+                }
+              }}
+              title="Delete"
+              className="file-tree-item__delete"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {node.type === 'directory' && isExpanded && node.children && (
+        <div className="file-tree-item__children">
+          {node.children.map((child) => (
+            <FileTreeItem
+              key={child.path}
+              node={child}
+              depth={depth + 1}
+              selectedFile={selectedFile}
+              onSelectFile={onSelectFile}
+              onCreateFile={onCreateFile}
+              onCreateFolder={onCreateFolder}
+              onDeleteFile={onDeleteFile}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export const FileExplorer: React.FC<FileExplorerProps> = ({
+  files,
+  selectedFile,
+  onSelectFile,
+  onCreateFile,
+  onCreateFolder,
+  onDeleteFile,
+  className = '',
+}) => {
+  return (
+    <div className={`file-explorer ${className}`}>
+      <div className="file-explorer__header">
+        <span>Files</span>
+        <div className="file-explorer__header-actions">
+          <button
+            onClick={() => {
+              const name = prompt('File name:');
+              if (name) onCreateFile('/', name);
+            }}
+            title="New file"
+          >
+            <FilePlus size={16} />
+          </button>
+          <button
+            onClick={() => {
+              const name = prompt('Folder name:');
+              if (name) onCreateFolder('/', name);
+            }}
+            title="New folder"
+          >
+            <FolderPlus size={16} />
+          </button>
+        </div>
+      </div>
+      
+      <div className="file-explorer__tree">
+        {files.map((file) => (
+          <FileTreeItem
+            key={file.path}
+            node={file}
+            depth={0}
+            selectedFile={selectedFile}
+            onSelectFile={onSelectFile}
+            onCreateFile={onCreateFile}
+            onCreateFolder={onCreateFolder}
+            onDeleteFile={onDeleteFile}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## 16. `src/components/FileExplorer/FileExplorer.css`
+
+```css
+.file-explorer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #181825;
+  color: #cdd6f4;
+}
+
+.file-explorer__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #313244;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6c7086;
+}
+
+.file-explorer__header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.file-explorer__header-actions button {
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.file-explorer__header-actions button:hover {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.file-explorer__tree {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.file-tree-item__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: background 0.1s;
+  user-select: none;
+}
+
+.file-tree-item__row:hover {
+  background: #1e1e2e;
+}
+
+.file-tree-item__row--selected {
+  background: #313244;
+}
+
+.file-tree-item__chevron {
+  width: 14px;
+  color: #6c7086;
+  flex-shrink: 0;
+}
+
+.file-tree-item__icon {
+  display: flex;
+  color: #6c7086;
+  flex-shrink: 0;
+}
+
+.file-icon--code {
+  color: #f9e2af;
+}
+
+.file-icon--json {
+  color: #94e2d5;
+}
+
+.file-icon--css {
+  color: #89b4fa;
+}
+
+.file-icon--html {
+  color: #fab387;
+}
+
+.file-tree-item__name {
+  flex: 1;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-tree-item__actions {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.file-tree-item__actions button {
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 4px;
+  opacity: 0.7;
+}
+
+.file-tree-item__actions button:hover {
+  opacity: 1;
+  background: #313244;
+}
+
+.file-tree-item__delete:hover {
+  color: #f38ba8 !important;
+}
+
+/* Mobile touch targets */
+@media (max-width: 768px) {
+  .file-tree-item__row {
+    padding: 10px 8px;
+    min-height: 44px;
+  }
+
+  .file-tree-item__actions button {
+    padding: 8px;
+  }
+}
+```
+
+---
+
+## 17. `src/components/Preview/Preview.tsx`
+
+```tsx
+import React, { useState, useCallback } from 'react';
+import { 
+  RefreshCw, 
+  ExternalLink, 
+  Smartphone, 
+  Monitor, 
+  Tablet,
+  QrCode,
+  X,
+  Copy,
+  Check,
+} from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
+import './Preview.css';
+
+interface PreviewProps {
+  url: string | null;
+  isLoading?: boolean;
+  className?: string;
+}
+
+type DeviceMode = 'desktop' | 'tablet' | 'mobile';
+
+const DEVICE_SIZES: Record<DeviceMode, { width: string; height: string }> = {
+  desktop: { width: '100%', height: '100%' },
+  tablet: { width: '768px', height: '1024px' },
+  mobile: { width: '375px', height: '667px' },
+};
+
+export const Preview: React.FC<PreviewProps> = ({
+  url,
+  isLoading = false,
+  className = '',
+}) => {
+  const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
+  const [showQR, setShowQR] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
+
+  const handleRefresh = useCallback(() => {
+    setIframeKey(prev => prev + 1);
+  }, []);
+
+  const handleCopyUrl = useCallback(async () => {
+    if (url) {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [url]);
+
+  const handleOpenExternal = useCallback(() => {
+    if (url) {
+      window.open(url, '_blank');
+    }
+  }, [url]);
+
+  return (
+    <div className={`preview ${className}`}>
+      {/* Toolbar */}
+      <div className="preview__toolbar">
+        <div className="preview__device-switcher">
+          <button
+            className={deviceMode === 'desktop' ? 'active' : ''}
+            onClick={() => setDeviceMode('desktop')}
+            title="Desktop"
+          >
+            <Monitor size={18} />
+          </button>
+          <button
+            className={deviceMode === 'tablet' ? 'active' : ''}
+            onClick={() => setDeviceMode('tablet')}
+            title="Tablet"
+          >
+            <Tablet size={18} />
+          </button>
+          <button
+            className={deviceMode === 'mobile' ? 'active' : ''}
+            onClick={() => setDeviceMode('mobile')}
+            title="Mobile"
+          >
+            <Smartphone size={18} />
+          </button>
+        </div>
+
+        <div className="preview__url-bar">
+          <input
+            type="text"
+            value={url || 'Not running'}
+            readOnly
+            className="preview__url-input"
+          />
+        </div>
+
+        <div className="preview__actions">
+          <button onClick={handleRefresh} title="Refresh">
+            <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+          </button>
+          <button onClick={() => setShowQR(true)} title="QR Code" disabled={!url}>
+            <QrCode size={18} />
+          </button>
+          <button onClick={handleOpenExternal} title="Open in new tab" disabled={!url}>
+            <ExternalLink size={18} />
+          </button>
+        </div>
+      </div>
+
+      {/* Preview Frame */}
+      <div className="preview__frame-container">
+        {url ? (
+          <div
+            className={`preview__frame-wrapper preview__frame-wrapper--${deviceMode}`}
+            style={deviceMode !== 'desktop' ? {
+              width: DEVICE_SIZES[deviceMode].width,
+              height: DEVICE_SIZES[deviceMode].height,
+            } : undefined}
+          >
+            <iframe
+              key={iframeKey}
+              src={url}
+              className="preview__iframe"
+              title="App Preview"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-modals"
+            />
+          </div>
+        ) : (
+          <div className="preview__empty">
+            <Monitor size={48} />
+            <p>Start the dev server to see preview</p>
+          </div>
+        )}
+      </div>
+
+      {/* QR Code Modal */}
+      {showQR && url && (
+        <div className="preview__qr-modal" onClick={() => setShowQR(false)}>
+          <div className="preview__qr-content" onClick={(e) => e.stopPropagation()}>
+            <button className="preview__qr-close" onClick={() => setShowQR(false)}>
+              <X size={20} />
+            </button>
+            <h3>Scan to preview on device</h3>
+            <div className="preview__qr-code">
+              <QRCodeSVG value={url} size={200} />
+            </div>
+            <div className="preview__qr-url">
+              <input type="text" value={url} readOnly />
+              <button onClick={handleCopyUrl}>
+                {copied ? <Check size={18} /> : <Copy size={18} />}
+              </button>
+            </div>
+            <p className="preview__qr-note">
+              Ensure your device is on the same network
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+---
+
+## 18. `src/components/Preview/Preview.css`
+
+```css
+.preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #11111b;
+}
+
+.preview__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+}
+
+.preview__device-switcher {
+  display: flex;
+  background: #11111b;
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.preview__device-switcher button {
+  background: none;
+  border: none;
+  color: #6c7086;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preview__device-switcher button:hover {
+  color: #cdd6f4;
+}
+
+.preview__device-switcher button.active {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.preview__url-bar {
+  flex: 1;
+}
+
+.preview__url-input {
+  width: 100%;
+  background: #11111b;
+  border: 1px solid #313244;
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: #6c7086;
+  font-size: 0.8125rem;
+  font-family: 'Fira Code', monospace;
+}
+
+.preview__actions {
+  display: flex;
+  gap: 4px;
+}
+
+.preview__actions button {
+  background: none;
+  border: none;
+  color: #6c7086;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preview__actions button:hover:not(:disabled) {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.preview__actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.preview__frame-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 16px;
+}
+
+.preview__frame-wrapper {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+.preview__frame-wrapper--desktop {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.preview__frame-wrapper--tablet,
+.preview__frame-wrapper--mobile {
+  border: 4px solid #313244;
+  border-radius: 16px;
+  max-height: 100%;
+}
+
+.preview__iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.preview__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #6c7086;
+  text-align: center;
+}
+
+/* QR Modal */
+.preview__qr-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.preview__qr-content {
+  background: #1e1e2e;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+.preview__qr-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+}
+
+.preview__qr-content h3 {
+  color: #cdd6f4;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.preview__qr-code {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.preview__qr-url {
+  display: flex;
+  gap: 8px;
+}
+
+.preview__qr-url input {
+  flex: 1;
+  background: #11111b;
+  border: 1px solid #313244;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #cdd6f4;
+  font-size: 0.75rem;
+}
+
+.preview__qr-url button {
+  background: #313244;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #cdd6f4;
+  cursor: pointer;
+}
+
+.preview__qr-note {
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: #6c7086;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .preview__toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .preview__device-switcher {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .preview__url-bar {
+    flex: 1 1 auto;
+  }
+}
+```
+
+---
+
+## 19. `src/components/Terminal/Terminal.tsx`
+
+```tsx
+import React, { useEffect, useRef, useCallback } from 'react';
+import { Terminal as XTerm } from '@xterm/xterm';
+import '@xterm/xterm/css/xterm.css';
+import { Maximize2, Minimize2, X } from 'lucide-react';
+import './Terminal.css';
+
+interface TerminalProps {
+  onCommand?: (command: string) => void;
+  className?: string;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+  onClose?: () => void;
+}
+
+export const Terminal: React.FC<TerminalProps> = ({
+  onCommand,
+  className = '',
+  isExpanded = false,
+  onToggleExpand,
+  onClose,
+}) => {
+  const terminalRef = useRef<HTMLDivElement>(null);
+  const xtermRef = useRef<XTerm | null>(null);
+  const inputBuffer = useRef<string>('');
+
+  const writePrompt = useCallback(() => {
+    xtermRef.current?.write('\r\n\x1b[32m❯\x1b[0m ');
+  }, []);
+
+  useEffect(() => {
+    if (!terminalRef.current) return;
+
+    const term = new XTerm({
+      theme: {
+        background: '#11111b',
+        foreground: '#cdd6f4',
+        cursor: '#f5e0dc',
+        cursorAccent: '#11111b',
+        selectionBackground: '#45475a',
+        black: '#45475a',
+        red: '#f38ba8',
+        green: '#a6e3a1',
+        yellow: '#f9e2af',
+        blue: '#89b4fa',
+        magenta: '#cba6f7',
+        cyan: '#94e2d5',
+        white: '#bac2de',
+        brightBlack: '#585b70',
+        brightRed: '#f38ba8',
+        brightGreen: '#a6e3a1',
+        brightYellow: '#f9e2af',
+        brightBlue: '#89b4fa',
+        brightMagenta: '#cba6f7',
+        brightCyan: '#94e2d5',
+        brightWhite: '#a6adc8',
+      },
+      fontFamily: '"Fira Code", "SF Mono", monospace',
+      fontSize: 14,
+      cursorBlink: true,
+      cursorStyle: 'bar',
+      convertEol: true,
+    });
+
+    term.open(terminalRef.current);
+    xtermRef.current = term;
+
+    // Welcome message
+    term.writeln('\x1b[36m╭──────────────────────────────────────╮\x1b[0m');
+    term.writeln('\x1b[36m│\x1b[0m  \x1b[1m🚀 Arena AI Builder Terminal\x1b[0m       \x1b[36m│\x1b[0m');
+    term.writeln('\x1b[36m│\x1b[0m  Type commands to interact           \x1b[36m│\x1b[0m');
+    term.writeln('\x1b[36m╰──────────────────────────────────────╯\x1b[0m');
+    writePrompt();
+
+    // Handle input
+    term.onData((data) => {
+      const code = data.charCodeAt(0);
+
+      if (code === 13) { // Enter
+        const command = inputBuffer.current.trim();
+        inputBuffer.current = '';
+        term.write('\r\n');
+        
+        if (command) {
+          onCommand?.(command);
+        }
+        writePrompt();
+      } else if (code === 127) { // Backspace
+        if (inputBuffer.current.length > 0) {
+          inputBuffer.current = inputBuffer.current.slice(0, -1);
+          term.write('\b \b');
+        }
+      } else if (code >= 32) { // Printable characters
+        inputBuffer.current += data;
+        term.write(data);
+      }
+    });
+
+    return () => {
+      term.dispose();
+    };
+  }, [onCommand, writePrompt]);
+
+  // Expose write method for external use
+  const write = useCallback((text: string) => {
+    xtermRef.current?.write(text);
+  }, []);
+
+  const writeLine = useCallback((text: string) => {
+    xtermRef.current?.writeln(text);
+  }, []);
+
+  return (
+    <div className={`terminal ${isExpanded ? 'terminal--expanded' : ''} ${className}`}>
+      <div className="terminal__header">
+        <span className="terminal__title">Terminal</span>
+        <div className="terminal__controls">
+          {onToggleExpand && (
+            <button onClick={onToggleExpand}>
+              {isExpanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            </button>
+          )}
+          {onClose && (
+            <button onClick={onClose}>
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      </div>
+      <div ref={terminalRef} className="terminal__content" />
+    </div>
+  );
+};
+```
+
+---
+
+## 20. `src/components/Terminal/Terminal.css`
+
+```css
+.terminal {
+  display: flex;
+  flex-direction: column;
+  background: #11111b;
+  border-top: 1px solid #313244;
+  height: 200px;
+  transition: height 0.3s ease;
+}
+
+.terminal--expanded {
+  height: 50vh;
+}
+
+.terminal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+}
+
+.terminal__title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6c7086;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.terminal__controls {
+  display: flex;
+  gap: 4px;
+}
+
+.terminal__controls button {
+  background: none;
+  border: none;
+  color: #6c7086;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.terminal__controls button:hover {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.terminal__content {
+  flex: 1;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.terminal__content .xterm {
+  height: 100%;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .terminal {
+    height: 150px;
+  }
+
+  .terminal--expanded {
+    height: 40vh;
+  }
+}
+```
+
+---
+
+## 21. `src/components/ArenaWallet/ArenaWallet.tsx`
+
+```tsx
+import React, { useState } from 'react';
+import { 
+  Wallet, 
+  Copy, 
+  Check, 
+  Send, 
+  RefreshCw,
+  User,
+  ExternalLink,
+} from 'lucide-react';
+import type { UserProfile } from '../../types';
+import './ArenaWallet.css';
+
+interface ArenaWalletProps {
+  isConnected: boolean;
+  walletAddress: string | null;
+  balance: string | null;
+  userProfile: UserProfile | null;
+  onRefreshBalance: () => Promise<void>;
+  onSendTransaction: (to: string, amount: string) => Promise<string | null>;
+  className?: string;
+}
+
+export const ArenaWallet: React.FC<ArenaWalletProps> = ({
+  isConnected,
+  walletAddress,
+  balance,
+  userProfile,
+  onRefreshBalance,
+  onSendTransaction,
+  className = '',
+}) => {
+  const [copied, setCopied] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showSend, setShowSend] = useState(false);
+  const [sendTo, setSendTo] = useState('');
+  const [sendAmount, setSendAmount] = useState('');
+  const [isSending, setIsSending] = useState(false);
+
+  const handleCopyAddress = async () => {
+    if (walletAddress) {
+      await navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await onRefreshBalance();
+    setIsRefreshing(false);
+  };
+
+  const handleSend = async () => {
+    if (!sendTo || !sendAmount) return;
+    
+    setIsSending(true);
+    try {
+      await onSendTransaction(sendTo, sendAmount);
+      setShowSend(false);
+      setSendTo('');
+      setSendAmount('');
+      await onRefreshBalance();
+    } catch (error) {
+      console.error('Transaction failed:', error);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const truncateAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  };
+
+  if (!isConnected) {
+    return (
+      <div className={`arena-wallet arena-wallet--disconnected ${className}`}>
+        <Wallet size={24} />
+        <p>Wallet not connected</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`arena-wallet ${className}`}>
+      {/* User Profile */}
+      {userProfile && (
+        <div className="arena-wallet__profile">
+          <img 
+            src={userProfile.userImageUrl} 
+            alt={userProfile.username}
+            className="arena-wallet__avatar"
+          />
+          <div className="arena-wallet__profile-info">
+            <span className="arena-wallet__username">{userProfile.userName}</span>
+            <span className="arena-wallet__handle">@{userProfile.userHandle}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Wallet Address */}
+      <div className="arena-wallet__address">
+        <span className="arena-wallet__label">Wallet</span>
+        <div className="arena-wallet__address-row">
+          <code>{walletAddress ? truncateAddress(walletAddress) : '...'}</code>
+          <button onClick={handleCopyAddress} title="Copy address">
+            {copied ? <Check size={14} /> : <Copy size={14} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Balance */}
+      <div className="arena-wallet__balance">
+        <span className="arena-wallet__label">Balance</span>
+        <div className="arena-wallet__balance-row">
+          <span className="arena-wallet__balance-value">
+            {balance ? `${parseFloat(balance).toFixed(4)} AVAX` : '...'}
+          </span>
+          <button 
+            onClick={handleRefresh} 
+            disabled={isRefreshing}
+            title="Refresh balance"
+          >
+            <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+          </button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      {userProfile && (
+        <div className="arena-wallet__stats">
+          <div className="arena-wallet__stat">
+            <span className="arena-wallet__stat-value">{userProfile.followerCount}</span>
+            <span className="arena-wallet__stat-label">Followers</span>
+          </div>
+          <div className="arena-wallet__stat">
+            <span className="arena-wallet__stat-value">{userProfile.ticketHolders}</span>
+            <span className="arena-wallet__stat-label">Holders</span>
+          </div>
+          <div className="arena-wallet__stat">
+            <span className="arena-wallet__stat-value">{userProfile.tokenHoldings}</span>
+            <span className="arena-wallet__stat-label">Holdings</span>
+          </div>
+        </div>
+      )}
+
+      {/* Send Button */}
+      <button 
+        className="arena-wallet__send-btn"
+        onClick={() => setShowSend(!showSend)}
+      >
+        <Send size={16} />
+        Send AVAX
+      </button>
+
+      {/* Send Form */}
+      {showSend && (
+        <div className="arena-wallet__send-form">
+          <input
+            type="text"
+            placeholder="Recipient address (0x...)"
+            value={sendTo}
+            onChange={(e) => setSendTo(e.target.value)}
+          />
+          <input
+            type="number"
+            placeholder="Amount (AVAX)"
+            value={sendAmount}
+            onChange={(e) => setSendAmount(e.target.value)}
+            step="0.001"
+            min="0"
+          />
+          <button 
+            onClick={handleSend}
+            disabled={!sendTo || !sendAmount || isSending}
+            className="arena-wallet__confirm-btn"
+          >
+            {isSending ? 'Sending...' : 'Confirm Send'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+---
+
+## 22. `src/components/ArenaWallet/ArenaWallet.css`
+
+```css
+.arena-wallet {
+  background: #1e1e2e;
+  border-radius: 16px;
+  padding: 20px;
+  color: #cdd6f4;
+}
+
+.arena-wallet--disconnected {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: #6c7086;
+}
+
+.arena-wallet__profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #313244;
+}
+
+.arena-wallet__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.arena-wallet__profile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.arena-wallet__username {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.arena-wallet__handle {
+  color: #6c7086;
+  font-size: 0.875rem;
+}
+
+.arena-wallet__label {
+  font-size: 0.75rem;
+  color: #6c7086;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.arena-wallet__address {
+  margin-bottom: 16px;
+}
+
+.arena-wallet__address-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.arena-wallet__address-row code {
+  background: #11111b;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.875rem;
+}
+
+.arena-wallet__address-row button {
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.arena-wallet__balance {
+  margin-bottom: 20px;
+}
+
+.arena-wallet__balance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.arena-wallet__balance-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #a6e3a1;
+}
+
+.arena-wallet__balance-row button {
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.arena-wallet__stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #11111b;
+  border-radius: 12px;
+}
+
+.arena-wallet__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.arena-wallet__stat-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #cdd6f4;
+}
+
+.arena-wallet__stat-label {
+  font-size: 0.75rem;
+  color: #6c7086;
+}
+
+.arena-wallet__send-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #8b5cf6;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.arena-wallet__send-btn:hover {
+  background: #7c3aed;
+}
+
+.arena-wallet__send-form {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.arena-wallet__send-form input {
+  background: #11111b;
+  border: 1px solid #313244;
+  border-radius: 8px;
+  padding: 12px;
+  color: #cdd6f4;
+  font-size: 0.875rem;
+}
+
+.arena-wallet__send-form input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.arena-wallet__confirm-btn {
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.arena-wallet__confirm-btn:hover:not(:disabled) {
+  background: #16a34a;
+}
+
+.arena-wallet__confirm-btn:disabled {
+  background: #313244;
+  cursor: not-allowed;
+}
+```
+
+---
+
+## 23. `src/components/Subscription/SubscriptionPlans.tsx`
+
+```tsx
+import React from 'react';
+import { Check, Sparkles, Zap, Crown } from 'lucide-react';
+import type { SubscriptionPlan } from '../../types';
+import { SUBSCRIPTION_PLANS } from '../../hooks/useSubscription';
+import './SubscriptionPlans.css';
+
+interface SubscriptionPlansProps {
+  currentPlanId?: string;
+  onSelectPlan: (plan: SubscriptionPlan) => void;
+  className?: string;
+}
+
+const PLAN_ICONS: Record<string, React.ReactNode> = {
+  starter: <Sparkles size={24} />,
+  pro: <Zap size={24} />,
+  premium: <Crown size={24} />,
+};
+
+const PLAN_COLORS: Record<string, string> = {
+  starter: '#6366f1',
+  pro: '#8b5cf6',
+  premium: '#f59e0b',
+};
+
+export const SubscriptionPlans: React.FC<SubscriptionPlansProps> = ({
+  currentPlanId,
+  onSelectPlan,
+  className = '',
+}) => {
+  return (
+    <div className={`subscription-plans ${className}`}>
+      <div className="subscription-plans__header">
+        <h2>Choose Your Plan</h2>
+        <p>Start building with AI-powered app creation</p>
+      </div>
+
+      <div className="subscription-plans__grid">
+        {SUBSCRIPTION_PLANS.map((plan) => {
+          const isCurrentPlan = currentPlanId === plan.id;
+          const isPro = plan.id === 'pro';
+
+          return (
+            <div
+              key={plan.id}
+              className={`subscription-plan ${isPro ? 'subscription-plan--featured' : ''} ${
+                isCurrentPlan ? 'subscription-plan--current' : ''
+              }`}
+              style={{ '--plan-color': PLAN_COLORS[plan.id] } as React.CSSProperties}
+            >
+              {isPro && (
+                <div className="subscription-plan__badge">Most Popular</div>
+              )}
+
+              <div className="subscription-plan__icon">
+                {PLAN_ICONS[plan.id]}
+              </div>
+
+              <h3 className="subscription-plan__name">{plan.name}</h3>
+
+              <div className="subscription-plan__price">
+                <span className="subscription-plan__currency">$
