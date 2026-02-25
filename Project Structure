@@ -1,0 +1,54 @@
+arena-ai-builder/
+├── public/
+│   └── index.html
+├── src/
+│   ├── components/
+│   │   ├── AIChat/
+│   │   │   ├── AIChat.tsx
+│   │   │   ├── MessageBubble.tsx
+│   │   │   └── AIChat.css
+│   │   ├── CodeEditor/
+│   │   │   ├── CodeEditor.tsx
+│   │   │   └── CodeEditor.css
+│   │   ├── FileExplorer/
+│   │   │   ├── FileExplorer.tsx
+│   │   │   └── FileExplorer.css
+│   │   ├── Preview/
+│   │   │   ├── Preview.tsx
+│   │   │   └── Preview.css
+│   │   ├── Terminal/
+│   │   │   ├── Terminal.tsx
+│   │   │   └── Terminal.css
+│   │   ├── Subscription/
+│   │   │   ├── SubscriptionPlans.tsx
+│   │   │   └── SubscriptionPlans.css
+│   │   ├── ArenaWallet/
+│   │   │   ├── ArenaWallet.tsx
+│   │   │   └── ArenaWallet.css
+│   │   └── Layout/
+│   │       ├── MobileLayout.tsx
+│   │       ├── DesktopLayout.tsx
+│   │       └── Layout.css
+│   ├── hooks/
+│   │   ├── useWebContainer.ts
+│   │   ├── useAI.ts
+│   │   ├── useArenaSDK.ts
+│   │   ├── useVisualViewport.ts
+│   │   └── useSubscription.ts
+│   ├── services/
+│   │   ├── aiService.ts
+│   │   ├── arenaService.ts
+│   │   ├── deployService.ts
+│   │   └── storageService.ts
+│   ├── types/
+│   │   └── index.ts
+│   ├── utils/
+│   │   ├── fileSystem.ts
+│   │   └── qrCode.ts
+│   ├── App.tsx
+│   ├── App.css
+│   └── index.tsx
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── vercel.json
