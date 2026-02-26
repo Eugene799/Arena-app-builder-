@@ -1,0 +1,617 @@
+Let's build all 7 additional features! This will be comprehensive:
+
+---
+
+# Feature 1: Settings Modal
+
+## `src/components/Settings/SettingsModal.tsx`
+
+```tsx
+import React, { useState, useCallback } from 'react';
+import {
+  X,
+  Key,
+  Palette,
+  Code,
+  Cloud,
+  Bell,
+  Shield,
+  Download,
+  Upload,
+  Trash2,
+  Check,
+  Eye,
+  EyeOff,
+  ExternalLink,
+} from 'lucide-react';
+import { storageService, type AppSettings, type APIKeys } from '../../services/storageService';
+import toast from 'react-hot-toast';
+import './SettingsModal.css';
+
+interface SettingsModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSettingsChange: (settings: AppSettings) => void;
+}
+
+type SettingsTab = 'api-keys' | 'appearance' | 'editor' | 'deployment' | 'data';
+
+export const SettingsModal: React.FC<SettingsModalProps> = ({
+  isOpen,
+  onClose,
+  onSettingsChange,
+}) => {
+  const [activeTab, setActiveTab] = useState<SettingsTab>('api-keys');
+  const [settings, setSettings] = useState<AppSettings>(storageService.getSettings());
+  const [apiKeys, setApiKeys] = useState<APIKeys>(storageService.getAPIKeys());
+  const [showKeys, setShowKeys] = useState<Record<string, boolean>>({});
+  const [isSaving, setIsSaving] = useState(false);
+
+  const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'api-keys', label: 'API Keys', icon: <Key size={18} /> },
+    { id: 'appearance', label: 'Appearance', icon: <Palette size={18} /> },
+    { id: 'editor', label: 'Editor', icon: <Code size={18} /> },
+    { id: 'deployment', label: 'Deployment', icon: <Cloud size={18} /> },
+    { id: 'data', label: 'Data', icon: <Shield size={18} /> },
+  ];
+
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      storageService.saveSettings(settings);
+      storageService.saveAPIKeys(apiKeys);
+      onSettingsChange(settings);
+      toast.success('Settings saved!');
+    } catch (error) {
+      toast.error('Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [settings, apiKeys, onSettingsChange]);
+
+  const handleExportData = useCallback(() => {
+    const data = storageService.exportAllData();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `arena-builder-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Data exported successfully!');
+  }, []);
+
+  const handleImportData = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        // Import projects
+        if (data.projects) {
+          data.projects.forEach((project: any) => {
+            storageService.saveProject(project);
+          });
+        }
+        // Import settings
+        if (data.settings) {
+          storageService.saveSettings(data.settings);
+          setSettings(data.settings);
+        }
+        toast.success('Data imported successfully!');
+      } catch {
+        toast.error('Invalid backup file');
+      }
+    };
+    reader.readAsText(file);
+  }, []);
+
+  const handleClearData = useCallback(() => {
+    if (confirm('Are you sure you want to delete all data? This cannot be undone.')) {
+      storageService.clearAllData();
+      toast.success('All data cleared');
+      onClose();
+      window.location.reload();
+    }
+  }, [onClose]);
+
+  const toggleShowKey = (key: string) => {
+    setShowKeys(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="settings-modal__overlay" onClick={onClose}>
+      <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+        {/* Header */}
+        <div className="settings-modal__header">
+          <h2>Settings</h2>
+          <button className="settings-modal__close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="settings-modal__body">
+          {/* Sidebar */}
+          <nav className="settings-modal__nav">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`settings-modal__nav-item ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.icon}
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* Content */}
+          <div className="settings-modal__content">
+            {/* API Keys Tab */}
+            {activeTab === 'api-keys' && (
+              <div className="settings-section">
+                <h3>AI Provider API Keys</h3>
+                <p className="settings-section__desc">
+                  Configure your AI provider API keys. At least one is required.
+                </p>
+
+                {/* Groq */}
+                <div className="settings-field">
+                  <label>
+                    <span>Groq API Key</span>
+                    <a href="https://console.groq.com/keys" target="_blank" rel="noopener">
+                      Get key <ExternalLink size={12} />
+                    </a>
+                  </label>
+                  <div className="settings-field__input-group">
+                    <input
+                      type={showKeys.groq ? 'text' : 'password'}
+                      value={apiKeys.groq || ''}
+                      onChange={(e) => setApiKeys({ ...apiKeys, groq: e.target.value })}
+                      placeholder="gsk_..."
+                    />
+                    <button onClick={() => toggleShowKey('groq')}>
+                      {showKeys.groq ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Gemini */}
+                <div className="settings-field">
+                  <label>
+                    <span>Google Gemini API Key</span>
+                    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">
+                      Get key <ExternalLink size={12} />
+                    </a>
+                  </label>
+                  <div className="settings-field__input-group">
+                    <input
+                      type={showKeys.gemini ? 'text' : 'password'}
+                      value={apiKeys.gemini || ''}
+                      onChange={(e) => setApiKeys({ ...apiKeys, gemini: e.target.value })}
+                      placeholder="AIza..."
+                    />
+                    <button onClick={() => toggleShowKey('gemini')}>
+                      {showKeys.gemini ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* OpenRouter */}
+                <div className="settings-field">
+                  <label>
+                    <span>OpenRouter API Key</span>
+                    <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">
+                      Get key <ExternalLink size={12} />
+                    </a>
+                  </label>
+                  <div className="settings-field__input-group">
+                    <input
+                      type={showKeys.openrouter ? 'text' : 'password'}
+                      value={apiKeys.openrouter || ''}
+                      onChange={(e) => setApiKeys({ ...apiKeys, openrouter: e.target.value })}
+                      placeholder="sk-or-..."
+                    />
+                    <button onClick={() => toggleShowKey('openrouter')}>
+                      {showKeys.openrouter ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                <h3 style={{ marginTop: 32 }}>Image Generation</h3>
+
+                {/* Leonardo */}
+                <div className="settings-field">
+                  <label>
+                    <span>Leonardo AI API Key</span>
+                    <a href="https://app.leonardo.ai/api-access" target="_blank" rel="noopener">
+                      Get key <ExternalLink size={12} />
+                    </a>
+                  </label>
+                  <div className="settings-field__input-group">
+                    <input
+                      type={showKeys.leonardo ? 'text' : 'password'}
+                      value={apiKeys.leonardo || ''}
+                      onChange={(e) => setApiKeys({ ...apiKeys, leonardo: e.target.value })}
+                      placeholder="Your Leonardo API key"
+                    />
+                    <button onClick={() => toggleShowKey('leonardo')}>
+                      {showKeys.leonardo ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                  <span className="settings-field__hint">
+                    Optional. Falls back to Pollinations.ai (free)
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Appearance Tab */}
+            {activeTab === 'appearance' && (
+              <div className="settings-section">
+                <h3>Theme</h3>
+                
+                <div className="settings-field">
+                  <label>Color Theme</label>
+                  <div className="settings-theme-selector">
+                    <button
+                      className={`settings-theme-option ${settings.theme === 'dark' ? 'active' : ''}`}
+                      onClick={() => setSettings({ ...settings, theme: 'dark' })}
+                    >
+                      <div className="settings-theme-preview settings-theme-preview--dark">
+                        <div className="settings-theme-preview__header" />
+                        <div className="settings-theme-preview__sidebar" />
+                        <div className="settings-theme-preview__content" />
+                      </div>
+                      <span>Dark</span>
+                    </button>
+                    <button
+                      className={`settings-theme-option ${settings.theme === 'light' ? 'active' : ''}`}
+                      onClick={() => setSettings({ ...settings, theme: 'light' })}
+                    >
+                      <div className="settings-theme-preview settings-theme-preview--light">
+                        <div className="settings-theme-preview__header" />
+                        <div className="settings-theme-preview__sidebar" />
+                        <div className="settings-theme-preview__content" />
+                      </div>
+                      <span>Light</span>
+                    </button>
+                  </div>
+                </div>
+
+                <h3>AI Provider</h3>
+                <div className="settings-field">
+                  <label>Default AI Provider</label>
+                  <select
+                    value={settings.aiProvider}
+                    onChange={(e) => setSettings({ 
+                      ...settings, 
+                      aiProvider: e.target.value as 'groq' | 'gemini' | 'openrouter' 
+                    })}
+                  >
+                    <option value="groq">Groq (Fastest)</option>
+                    <option value="gemini">Google Gemini (Best context)</option>
+                    <option value="openrouter">OpenRouter (Most models)</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {/* Editor Tab */}
+            {activeTab === 'editor' && (
+              <div className="settings-section">
+                <h3>Editor Settings</h3>
+
+                <div className="settings-field">
+                  <label>Font Size</label>
+                  <div className="settings-slider">
+                    <input
+                      type="range"
+                      min="10"
+                      max="24"
+                      value={settings.fontSize}
+                      onChange={(e) => setSettings({ 
+                        ...settings, 
+                        fontSize: parseInt(e.target.value) 
+                      })}
+                    />
+                    <span>{settings.fontSize}px</span>
+                  </div>
+                </div>
+
+                <div className="settings-field">
+                  <label className="settings-toggle">
+                    <span>Auto-save</span>
+                    <input
+                      type="checkbox"
+                      checked={settings.autoSave}
+                      onChange={(e) => setSettings({ 
+                        ...settings, 
+                        autoSave: e.target.checked 
+                      })}
+                    />
+                    <span className="settings-toggle__slider" />
+                  </label>
+                  <span className="settings-field__hint">
+                    Automatically save changes to files
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Deployment Tab */}
+            {activeTab === 'deployment' && (
+              <div className="settings-section">
+                <h3>Deployment Credentials</h3>
+                <p className="settings-section__desc">
+                  Configure deployment platform credentials for one-click deploys.
+                </p>
+
+                {/* Vercel */}
+                <div className="settings-field">
+                  <label>
+                    <span>Vercel Token</span>
+                    <a href="https://vercel.com/account/tokens" target="_blank" rel="noopener">
+                      Get token <ExternalLink size={12} />
+                    </a>
+                  </label>
+                  <div className="settings-field__input-group">
+                    <input
+                      type={showKeys.vercel ? 'text' : 'password'}
+                      value={apiKeys.vercel || ''}
+                      onChange={(e) => setApiKeys({ ...apiKeys, vercel: e.target.value })}
+                      placeholder="Your Vercel token"
+                    />
+                    <button onClick={() => toggleShowKey('vercel')}>
+                      {showKeys.vercel ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Netlify */}
+                <div className="settings-field">
+                  <label>
+                    <span>Netlify Token</span>
+                    <a href="https://app.netlify.com/user/applications#personal-access-tokens" target="_blank" rel="noopener">
+                      Get token <ExternalLink size={12} />
+                    </a>
+                  </label>
+                  <div className="settings-field__input-group">
+                    <input
+                      type={showKeys.netlify ? 'text' : 'password'}
+                      value={apiKeys.netlify || ''}
+                      onChange={(e) => setApiKeys({ ...apiKeys, netlify: e.target.value })}
+                      placeholder="Your Netlify token"
+                    />
+                    <button onClick={() => toggleShowKey('netlify')}>
+                      {showKeys.netlify ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Data Tab */}
+            {activeTab === 'data' && (
+              <div className="settings-section">
+                <h3>Data Management</h3>
+
+                <div className="settings-data-actions">
+                  <button className="settings-data-btn" onClick={handleExportData}>
+                    <Download size={20} />
+                    <div>
+                      <span>Export All Data</span>
+                      <small>Download backup of all projects and settings</small>
+                    </div>
+                  </button>
+
+                  <label className="settings-data-btn">
+                    <Upload size={20} />
+                    <div>
+                      <span>Import Data</span>
+                      <small>Restore from a backup file</small>
+                    </div>
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={handleImportData}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+
+                  <button 
+                    className="settings-data-btn settings-data-btn--danger"
+                    onClick={handleClearData}
+                  >
+                    <Trash2 size={20} />
+                    <div>
+                      <span>Clear All Data</span>
+                      <small>Delete all projects and settings permanently</small>
+                    </div>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="settings-modal__footer">
+          <button className="settings-modal__cancel" onClick={onClose}>
+            Cancel
+          </button>
+          <button 
+            className="settings-modal__save" 
+            onClick={handleSave}
+            disabled={isSaving}
+          >
+            {isSaving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## `src/components/Settings/SettingsModal.css`
+
+```css
+.settings-modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.settings-modal {
+  background: #1e1e2e;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.settings-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #313244;
+}
+
+.settings-modal__header h2 {
+  font-size: 1.25rem;
+  color: #cdd6f4;
+}
+
+.settings-modal__close {
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.settings-modal__close:hover {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.settings-modal__body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.settings-modal__nav {
+  width: 200px;
+  background: #181825;
+  padding: 16px;
+  border-right: 1px solid #313244;
+  flex-shrink: 0;
+}
+
+.settings-modal__nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: #a6adc8;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.settings-modal__nav-item:hover {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.settings-modal__nav-item.active {
+  background: #8b5cf6;
+  color: #fff;
+}
+
+.settings-modal__content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.settings-section h3 {
+  font-size: 1rem;
+  color: #cdd6f4;
+  margin-bottom: 8px;
+}
+
+.settings-section__desc {
+  color: #6c7086;
+  font-size: 0.875rem;
+  margin-bottom: 20px;
+}
+
+.settings-field {
+  margin-bottom: 20px;
+}
+
+.settings-field > label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #a6adc8;
+  margin-bottom: 8px;
+}
+
+.settings-field > label a {
+  color: #8b5cf6;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+}
+
+.settings-field > label a:hover {
+  text-decoration: underline;
+}
+
+.settings-field__input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-field__input-group input
