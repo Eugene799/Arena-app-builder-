@@ -1,0 +1,786 @@
+Continuing from where we left off:
+
+---
+
+## 31. `src/App.tsx` (continued)
+
+```tsx
+        name: 'index.css',
+        type: 'file',
+        path: '/src/index.css',
+        content: `@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}`,
+      },
+    ],
+  },
+  {
+    name: 'package.json',
+    type: 'file',
+    path: '/package.json',
+    content: JSON.stringify({
+      name: 'arena-app',
+      private: true,
+      version: '0.0.1',
+      type: 'module',
+      scripts: {
+        dev: 'vite',
+        build: 'vite build',
+        preview: 'vite preview',
+      },
+      dependencies: {
+        react: '^18.2.0',
+        'react-dom': '^18.2.0',
+      },
+      devDependencies: {
+        '@types/react': '^18.2.0',
+        '@types/react-dom': '^18.2.0',
+        '@vitejs/plugin-react': '^4.0.0',
+        autoprefixer: '^10.4.14',
+        postcss: '^8.4.24',
+        tailwindcss: '^3.3.2',
+        typescript: '^5.0.0',
+        vite: '^5.0.0',
+      },
+    }, null, 2),
+  },
+  {
+    name: 'index.html',
+    type: 'file',
+    path: '/index.html',
+    content: `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arena App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>`,
+  },
+  {
+    name: 'vite.config.ts',
+    type: 'file',
+    path: '/vite.config.ts',
+    content: `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+});`,
+  },
+  {
+    name: 'tailwind.config.js',
+    type: 'file',
+    path: '/tailwind.config.js',
+    content: `/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};`,
+  },
+  {
+    name: 'postcss.config.js',
+    type: 'file',
+    path: '/postcss.config.js',
+    content: `export default {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};`,
+  },
+  {
+    name: 'tsconfig.json',
+    type: 'file',
+    path: '/tsconfig.json',
+    content: JSON.stringify({
+      compilerOptions: {
+        target: 'ES2020',
+        useDefineForClassFields: true,
+        lib: ['ES2020', 'DOM', 'DOM.Iterable'],
+        module: 'ESNext',
+        skipLibCheck: true,
+        moduleResolution: 'bundler',
+        allowImportingTsExtensions: true,
+        resolveJsonModule: true,
+        isolatedModules: true,
+        noEmit: true,
+        jsx: 'react-jsx',
+        strict: true,
+        noUnusedLocals: true,
+        noUnusedParameters: true,
+        noFallthroughCasesInSwitch: true,
+      },
+      include: ['src'],
+      references: [{ path: './tsconfig.node.json' }],
+    }, null, 2),
+  },
+];
+
+function App() {
+  // State
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [files, setFiles] = useState<FileNode[]>(STARTER_FILES);
+  const [selectedFile, setSelectedFile] = useState<string | null>('/src/App.tsx');
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [isAILoading, setIsAILoading] = useState(false);
+  const [showSubscription, setShowSubscription] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Hooks
+  const webContainer = useWebContainer();
+  const arena = useArenaSDK();
+  const subscription = useSubscription();
+
+  // Services
+  const settings = useMemo(() => storageService.getSettings(), []);
+  const apiKeys = useMemo(() => storageService.getAPIKeys(), []);
+  
+  const aiService = useMemo(() => {
+    if (!apiKeys[settings.aiProvider]) return null;
+    return new AIService({
+      provider: settings.aiProvider,
+      apiKey: apiKeys[settings.aiProvider]!,
+    });
+  }, [settings.aiProvider, apiKeys]);
+
+  // Get current file content
+  const currentFileContent = useMemo(() => {
+    if (!selectedFile) return '';
+    
+    const findFile = (nodes: FileNode[]): string => {
+      for (const node of nodes) {
+        if (node.path === selectedFile && node.type === 'file') {
+          return node.content || '';
+        }
+        if (node.children) {
+          const found = findFile(node.children);
+          if (found) return found;
+        }
+      }
+      return '';
+    };
+    
+    return findFile(files);
+  }, [selectedFile, files]);
+
+  // Responsive handling
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Boot WebContainer on mount
+  useEffect(() => {
+    const initWebContainer = async () => {
+      try {
+        await webContainer.boot();
+        toast.success('Development environment ready!');
+      } catch (error) {
+        toast.error('Failed to initialize environment');
+        console.error(error);
+      }
+    };
+
+    initWebContainer();
+  }, []);
+
+  // Handle file content change
+  const handleCodeChange = useCallback((newContent: string) => {
+    if (!selectedFile) return;
+
+    setFiles(prevFiles => {
+      const updateFile = (nodes: FileNode[]): FileNode[] => {
+        return nodes.map(node => {
+          if (node.path === selectedFile && node.type === 'file') {
+            return { ...node, content: newContent };
+          }
+          if (node.children) {
+            return { ...node, children: updateFile(node.children) };
+          }
+          return node;
+        });
+      };
+      return updateFile(prevFiles);
+    });
+
+    // Also update in WebContainer
+    if (webContainer.isReady) {
+      webContainer.writeFile(selectedFile, newContent).catch(console.error);
+    }
+  }, [selectedFile, webContainer]);
+
+  // Handle AI message send
+  const handleSendMessage = useCallback(async (content: string) => {
+    if (!aiService) {
+      toast.error('Please configure your AI API key in settings');
+      return;
+    }
+
+    if (!subscription.canSendMessage()) {
+      setShowSubscription(true);
+      toast.error('No messages remaining. Please upgrade your plan.');
+      return;
+    }
+
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content,
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setIsAILoading(true);
+
+    try {
+      const response = await aiService.sendMessage([...messages, userMessage]);
+      
+      const assistantMessage: Message = {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: response.content,
+        timestamp: new Date(),
+        codeBlocks: response.codeBlocks,
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+      subscription.incrementMessageCount();
+      storageService.updateSubscriptionUsage('messages');
+
+      if (response.codeBlocks.length > 0) {
+        toast.success(`Generated ${response.codeBlocks.length} code file(s)`);
+      }
+    } catch (error) {
+      toast.error('Failed to get AI response');
+      console.error(error);
+    } finally {
+      setIsAILoading(false);
+    }
+  }, [aiService, messages, subscription]);
+
+  // Apply code blocks from AI response
+  const handleApplyCode = useCallback(async (codeBlocks: CodeBlock[]) => {
+    for (const block of codeBlocks) {
+      const path = block.filename.startsWith('/') ? block.filename : `/src/${block.filename}`;
+      
+      // Update local state
+      setFiles(prevFiles => {
+        const pathParts = path.split('/').filter(Boolean);
+        const fileName = pathParts.pop()!;
+        
+        const updateOrAddFile = (nodes: FileNode[], depth: number): FileNode[] => {
+          if (depth === pathParts.length) {
+            const existingIndex = nodes.findIndex(n => n.name === fileName);
+            const newFile: FileNode = {
+              name: fileName,
+              type: 'file',
+              path,
+              content: block.code,
+            };
+            
+            if (existingIndex >= 0) {
+              const updated = [...nodes];
+              updated[existingIndex] = newFile;
+              return updated;
+            }
+            return [...nodes, newFile];
+          }
+          
+          const dirName = pathParts[depth];
+          const dirIndex = nodes.findIndex(n => n.name === dirName && n.type === 'directory');
+          
+          if (dirIndex >= 0) {
+            const updated = [...nodes];
+            updated[dirIndex] = {
+              ...updated[dirIndex],
+              children: updateOrAddFile(updated[dirIndex].children || [], depth + 1),
+            };
+            return updated;
+          }
+          
+          return [
+            ...nodes,
+            {
+              name: dirName,
+              type: 'directory',
+              path: '/' + pathParts.slice(0, depth + 1).join('/'),
+              children: updateOrAddFile([], depth + 1),
+            },
+          ];
+        };
+        
+        return updateOrAddFile(prevFiles, 0);
+      });
+
+      // Write to WebContainer
+      if (webContainer.isReady) {
+        const dir = path.substring(0, path.lastIndexOf('/'));
+        if (dir) {
+          await webContainer.mkdir(dir);
+        }
+        await webContainer.writeFile(path, block.code);
+      }
+    }
+
+    setSelectedFile(codeBlocks[0]?.filename.startsWith('/') 
+      ? codeBlocks[0].filename 
+      : `/src/${codeBlocks[0]?.filename}`
+    );
+    
+    toast.success('Code applied to project!');
+  }, [webContainer]);
+
+  // File operations
+  const handleCreateFile = useCallback((parentPath: string, name: string) => {
+    const newPath = parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
+    const newFile: FileNode = {
+      name,
+      type: 'file',
+      path: newPath,
+      content: '',
+    };
+
+    setFiles(prevFiles => {
+      const addToParent = (nodes: FileNode[]): FileNode[] => {
+        if (parentPath === '/') {
+          return [...nodes, newFile];
+        }
+        return nodes.map(node => {
+          if (node.path === parentPath && node.type === 'directory') {
+            return { ...node, children: [...(node.children || []), newFile] };
+          }
+          if (node.children) {
+            return { ...node, children: addToParent(node.children) };
+          }
+          return node;
+        });
+      };
+      return addToParent(prevFiles);
+    });
+
+    setSelectedFile(newPath);
+  }, []);
+
+  const handleCreateFolder = useCallback((parentPath: string, name: string) => {
+    const newPath = parentPath === '/' ? `/${name}` : `${parentPath}/${name}`;
+    const newFolder: FileNode = {
+      name,
+      type: 'directory',
+      path: newPath,
+      children: [],
+    };
+
+    setFiles(prevFiles => {
+      const addToParent = (nodes: FileNode[]): FileNode[] => {
+        if (parentPath === '/') {
+          return [...nodes, newFolder];
+        }
+        return nodes.map(node => {
+          if (node.path === parentPath && node.type === 'directory') {
+            return { ...node, children: [...(node.children || []), newFolder] };
+          }
+          if (node.children) {
+            return { ...node, children: addToParent(node.children) };
+          }
+          return node;
+        });
+      };
+      return addToParent(prevFiles);
+    });
+  }, []);
+
+  const handleDeleteFile = useCallback((path: string) => {
+    setFiles(prevFiles => {
+      const removeFromTree = (nodes: FileNode[]): FileNode[] => {
+        return nodes
+          .filter(node => node.path !== path)
+          .map(node => {
+            if (node.children) {
+              return { ...node, children: removeFromTree(node.children) };
+            }
+            return node;
+          });
+      };
+      return removeFromTree(prevFiles);
+    });
+
+    if (selectedFile === path) {
+      setSelectedFile(null);
+    }
+  }, [selectedFile]);
+
+  // Terminal command handler
+  const handleTerminalCommand = useCallback(async (command: string) => {
+    if (!webContainer.isReady) {
+      toast.error('WebContainer not ready');
+      return;
+    }
+
+    const [cmd, ...args] = command.split(' ');
+
+    try {
+      if (cmd === 'npm' && args[0] === 'install') {
+        toast.loading('Installing dependencies...', { id: 'npm-install' });
+        await webContainer.installDependencies((data) => {
+          console.log(data);
+        });
+        toast.success('Dependencies installed!', { id: 'npm-install' });
+      } else if (cmd === 'npm' && (args[0] === 'run' && args[1] === 'dev' || args[0] === 'start')) {
+        toast.loading('Starting dev server...', { id: 'dev-server' });
+        await webContainer.startDevServer((data) => {
+          console.log(data);
+        });
+        toast.success('Dev server started!', { id: 'dev-server' });
+      } else {
+        await webContainer.spawn(cmd, args);
+      }
+    } catch (error) {
+      toast.error(`Command failed: ${command}`);
+      console.error(error);
+    }
+  }, [webContainer]);
+
+  // Panels
+  const chatPanel = (
+    <AIChat
+      messages={messages}
+      onSendMessage={handleSendMessage}
+      onApplyCode={handleApplyCode}
+      isLoading={isAILoading}
+      remainingMessages={subscription.getRemainingMessages()}
+    />
+  );
+
+  const codePanel = (
+    <CodeEditor
+      value={currentFileContent}
+      onChange={handleCodeChange}
+      language={selectedFile?.split('.').pop() || 'typescript'}
+    />
+  );
+
+  const filesPanel = (
+    <FileExplorer
+      files={files}
+      selectedFile={selectedFile}
+      onSelectFile={setSelectedFile}
+      onCreateFile={handleCreateFile}
+      onCreateFolder={handleCreateFolder}
+      onDeleteFile={handleDeleteFile}
+    />
+  );
+
+  const previewPanel = (
+    <Preview
+      url={webContainer.previewUrl}
+      isLoading={webContainer.isBooting}
+    />
+  );
+
+  const terminalPanel = (
+    <Terminal
+      onCommand={handleTerminalCommand}
+    />
+  );
+
+  const walletPanel = (
+    <ArenaWallet
+      isConnected={arena.isConnected}
+      walletAddress={arena.walletAddress}
+      balance={arena.balance}
+      userProfile={arena.userProfile}
+      onRefreshBalance={arena.fetchBalance}
+      onSendTransaction={arena.sendTransaction}
+    />
+  );
+
+  // Render subscription modal
+  if (showSubscription) {
+    return (
+      <div className="subscription-modal">
+        <button 
+          className="subscription-modal__close"
+          onClick={() => setShowSubscription(false)}
+        >
+          ✕
+        </button>
+        <SubscriptionPlans
+          currentPlanId={subscription.subscription?.planId}
+          onSelectPlan={async (plan) => {
+            await subscription.subscribe(plan.id, 'card');
+            setShowSubscription(false);
+            toast.success(`Subscribed to ${plan.name} plan!`);
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: '#1e1e2e',
+            color: '#cdd6f4',
+            border: '1px solid #313244',
+          },
+        }}
+      />
+      
+      {isMobile ? (
+        <MobileLayout
+          chatPanel={chatPanel}
+          codePanel={codePanel}
+          filesPanel={filesPanel}
+          previewPanel={previewPanel}
+          terminalPanel={terminalPanel}
+          walletPanel={walletPanel}
+          onOpenSettings={() => {/* Open settings modal */}}
+        />
+      ) : (
+        <DesktopLayout
+          chatPanel={chatPanel}
+          codePanel={codePanel}
+          filesPanel={filesPanel}
+          previewPanel={previewPanel}
+          terminalPanel={terminalPanel}
+          walletPanel={walletPanel}
+          onOpenSettings={() => {/* Open settings modal */}}
+        />
+      )}
+    </>
+  );
+}
+
+export default App;
+```
+
+---
+
+## 32. `src/App.css`
+
+```css
+/* Global App Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f0f1a;
+  color: #cdd6f4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #11111b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #313244;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #45475a;
+}
+
+/* Animation Utilities */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Subscription Modal */
+.subscription-modal {
+  position: fixed;
+  inset: 0;
+  background: #0f0f1a;
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.subscription-modal__close {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  background: #313244;
+  border: none;
+  border-radius: 50%;
+  color: #cdd6f4;
+  font-size: 1.25rem;
+  cursor: pointer;
+  z-index: 1001;
+  transition: background 0.2s;
+}
+
+.subscription-modal__close:hover {
+  background: #45475a;
+}
+
+/* Focus Styles */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background: rgba(139, 92, 246, 0.3);
+  color: #fff;
+}
+
+/* Mobile Safe Area */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .mobile-layout__nav {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+}
+```
+
+---
+
+## 33. `src/index.tsx`
+
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+import './App.css';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
+
+---
+
+## 34. `public/index.html`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0f0f1a" />
+    <meta name="description" content="Arena AI Builder - Build apps with AI on Stars Arena" />
+    
+    <!-- Prevent iOS zoom on input focus -->
+    <meta name="format-detection" content="telephone=no" />
+    
+    <!-- PWA Support -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <title>Arena AI Builder</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>
+```
+
+---
+
+## 35. `src/utils/fileSystem.ts`
+
+```typescript
+import type { FileNode } from '../types';
+
+export function flattenFiles(nodes: FileNode[]): { path: string; content: string }[] {
+  const result: { path: string; content: string }[] = [];
+
+  const traverse = (node: FileNode) => {
+    if (node.type === 'file' && node.content !== undefined) {
+      result.push({ path: node.path, content: node.content });
+    }
+    if (node.children) {
+      node.children.forEach(traverse);
+    }
+  };
+
+  nodes.forEach(traverse);
+  return result;
+}
+
+export function convertToWebContainerFS(nodes: FileNode[]): Record<string, any> {
+  const fs: Record<string, any> = {};
+
+  const processNode = (node: FileNode, parent: Record<string, any>) => {
+    if (node.type === 'directory') {
+      parent[node.name] = {
+        directory: {},
+     
