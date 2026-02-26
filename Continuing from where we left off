@@ -1,0 +1,913 @@
+Continuing from where we left off:
+
+---
+
+## 23. `src/components/Subscription/SubscriptionPlans.tsx` (continued)
+
+```tsx
+              <div className="subscription-plan__price">
+                <span className="subscription-plan__currency">$</span>
+                <span className="subscription-plan__amount">{plan.price}</span>
+                <span className="subscription-plan__period">/month</span>
+              </div>
+
+              <div className="subscription-plan__limits">
+                <div className="subscription-plan__limit">
+                  <strong>{plan.appsLimit}</strong> apps
+                </div>
+                <div className="subscription-plan__limit">
+                  <strong>{plan.messagesLimit}</strong> messages/mo
+                </div>
+              </div>
+
+              <ul className="subscription-plan__features">
+                {plan.features.map((feature, index) => (
+                  <li key={index}>
+                    <Check size={16} />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                className="subscription-plan__button"
+                onClick={() => onSelectPlan(plan)}
+                disabled={isCurrentPlan}
+              >
+                {isCurrentPlan ? 'Current Plan' : 'Get Started'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="subscription-plans__footer">
+        <p>All plans include access to WebContainer runtime, Stars Arena SDK integration, and deployment features.</p>
+        <p>Pay with AVAX or credit card. Cancel anytime.</p>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## 24. `src/components/Subscription/SubscriptionPlans.css`
+
+```css
+.subscription-plans {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.subscription-plans__header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.subscription-plans__header h2 {
+  font-size: 2rem;
+  color: #cdd6f4;
+  margin-bottom: 8px;
+}
+
+.subscription-plans__header p {
+  color: #6c7086;
+  font-size: 1.125rem;
+}
+
+.subscription-plans__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.subscription-plan {
+  background: #1e1e2e;
+  border: 1px solid #313244;
+  border-radius: 20px;
+  padding: 32px 24px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.subscription-plan:hover {
+  transform: translateY(-4px);
+  border-color: var(--plan-color);
+}
+
+.subscription-plan--featured {
+  border-color: var(--plan-color);
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.1) 0%, #1e1e2e 100%);
+}
+
+.subscription-plan--current {
+  border-color: #22c55e;
+}
+
+.subscription-plan__badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--plan-color);
+  color: #fff;
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.subscription-plan__icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(139, 92, 246, 0.15);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--plan-color);
+  margin-bottom: 20px;
+}
+
+.subscription-plan__name {
+  font-size: 1.25rem;
+  color: #cdd6f4;
+  margin-bottom: 16px;
+}
+
+.subscription-plan__price {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+
+.subscription-plan__currency {
+  font-size: 1.5rem;
+  color: #6c7086;
+  margin-right: 2px;
+}
+
+.subscription-plan__amount {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #cdd6f4;
+}
+
+.subscription-plan__period {
+  color: #6c7086;
+  margin-left: 4px;
+}
+
+.subscription-plan__limits {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #313244;
+}
+
+.subscription-plan__limit {
+  background: #11111b;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #a6adc8;
+}
+
+.subscription-plan__limit strong {
+  color: #cdd6f4;
+}
+
+.subscription-plan__features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  flex: 1;
+}
+
+.subscription-plan__features li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  color: #a6adc8;
+  font-size: 0.9375rem;
+}
+
+.subscription-plan__features li svg {
+  color: #22c55e;
+  flex-shrink: 0;
+}
+
+.subscription-plan__button {
+  width: 100%;
+  padding: 14px;
+  background: var(--plan-color);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.subscription-plan__button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.subscription-plan__button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.subscription-plan__button:disabled {
+  background: #313244;
+  cursor: default;
+}
+
+.subscription-plan--current .subscription-plan__button {
+  background: #22c55e;
+}
+
+.subscription-plans__footer {
+  text-align: center;
+  color: #6c7086;
+  font-size: 0.875rem;
+}
+
+.subscription-plans__footer p {
+  margin: 8px 0;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .subscription-plans {
+    padding: 24px 16px;
+  }
+
+  .subscription-plans__header h2 {
+    font-size: 1.5rem;
+  }
+
+  .subscription-plan {
+    padding: 24px 20px;
+  }
+
+  .subscription-plan__amount {
+    font-size: 2.5rem;
+  }
+}
+```
+
+---
+
+## 25. `src/components/Layout/MobileLayout.tsx`
+
+```tsx
+import React, { useState, useCallback } from 'react';
+import { 
+  Code, 
+  MessageSquare, 
+  FolderTree, 
+  Play, 
+  Terminal as TerminalIcon,
+  Menu,
+  X,
+  Wallet,
+  Settings,
+} from 'lucide-react';
+import { useVisualViewport } from '../../hooks/useVisualViewport';
+import './Layout.css';
+
+type MobileTab = 'chat' | 'code' | 'files' | 'preview' | 'terminal';
+
+interface MobileLayoutProps {
+  chatPanel: React.ReactNode;
+  codePanel: React.ReactNode;
+  filesPanel: React.ReactNode;
+  previewPanel: React.ReactNode;
+  terminalPanel: React.ReactNode;
+  walletPanel?: React.ReactNode;
+  onOpenSettings?: () => void;
+}
+
+export const MobileLayout: React.FC<MobileLayoutProps> = ({
+  chatPanel,
+  codePanel,
+  filesPanel,
+  previewPanel,
+  terminalPanel,
+  walletPanel,
+  onOpenSettings,
+}) => {
+  const [activeTab, setActiveTab] = useState<MobileTab>('chat');
+  const [showSidebar, setShowSidebar] = useState(false);
+  const viewport = useVisualViewport();
+
+  const tabs: { id: MobileTab; icon: React.ReactNode; label: string }[] = [
+    { id: 'chat', icon: <MessageSquare size={20} />, label: 'AI' },
+    { id: 'code', icon: <Code size={20} />, label: 'Code' },
+    { id: 'files', icon: <FolderTree size={20} />, label: 'Files' },
+    { id: 'preview', icon: <Play size={20} />, label: 'Preview' },
+    { id: 'terminal', icon: <TerminalIcon size={20} />, label: 'Terminal' },
+  ];
+
+  const renderPanel = useCallback(() => {
+    switch (activeTab) {
+      case 'chat':
+        return chatPanel;
+      case 'code':
+        return codePanel;
+      case 'files':
+        return filesPanel;
+      case 'preview':
+        return previewPanel;
+      case 'terminal':
+        return terminalPanel;
+      default:
+        return null;
+    }
+  }, [activeTab, chatPanel, codePanel, filesPanel, previewPanel, terminalPanel]);
+
+  return (
+    <div 
+      className="mobile-layout"
+      style={{ 
+        height: viewport.isKeyboardOpen ? `${viewport.height}px` : '100dvh',
+      }}
+    >
+      {/* Header */}
+      <header className="mobile-layout__header">
+        <button 
+          className="mobile-layout__menu-btn"
+          onClick={() => setShowSidebar(true)}
+        >
+          <Menu size={24} />
+        </button>
+        <h1 className="mobile-layout__title">Arena AI Builder</h1>
+        <button 
+          className="mobile-layout__settings-btn"
+          onClick={onOpenSettings}
+        >
+          <Settings size={20} />
+        </button>
+      </header>
+
+      {/* Main Content */}
+      <main className="mobile-layout__content">
+        {renderPanel()}
+      </main>
+
+      {/* Bottom Navigation */}
+      <nav className="mobile-layout__nav">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`mobile-layout__nav-item ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.icon}
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* Sidebar */}
+      {showSidebar && (
+        <div className="mobile-layout__sidebar-overlay" onClick={() => setShowSidebar(false)}>
+          <aside 
+            className="mobile-layout__sidebar"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mobile-layout__sidebar-header">
+              <h2>Menu</h2>
+              <button onClick={() => setShowSidebar(false)}>
+                <X size={24} />
+              </button>
+            </div>
+            
+            {/* Wallet Widget */}
+            <div className="mobile-layout__sidebar-wallet">
+              {walletPanel}
+            </div>
+
+            <nav className="mobile-layout__sidebar-nav">
+              <button onClick={() => { setActiveTab('chat'); setShowSidebar(false); }}>
+                <MessageSquare size={20} />
+                <span>AI Chat</span>
+              </button>
+              <button onClick={() => { /* open projects */ setShowSidebar(false); }}>
+                <FolderTree size={20} />
+                <span>My Projects</span>
+              </button>
+              <button onClick={() => { onOpenSettings?.(); setShowSidebar(false); }}>
+                <Settings size={20} />
+                <span>Settings</span>
+              </button>
+            </nav>
+          </aside>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+---
+
+## 26. `src/components/Layout/DesktopLayout.tsx`
+
+```tsx
+import React, { useState, useCallback } from 'react';
+import { 
+  PanelLeftClose, 
+  PanelLeftOpen,
+  PanelBottomClose,
+  PanelBottomOpen,
+  Settings,
+  Wallet,
+} from 'lucide-react';
+import './Layout.css';
+
+interface DesktopLayoutProps {
+  chatPanel: React.ReactNode;
+  codePanel: React.ReactNode;
+  filesPanel: React.ReactNode;
+  previewPanel: React.ReactNode;
+  terminalPanel: React.ReactNode;
+  walletPanel?: React.ReactNode;
+  onOpenSettings?: () => void;
+}
+
+export const DesktopLayout: React.FC<DesktopLayoutProps> = ({
+  chatPanel,
+  codePanel,
+  filesPanel,
+  previewPanel,
+  terminalPanel,
+  walletPanel,
+  onOpenSettings,
+}) => {
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [showTerminal, setShowTerminal] = useState(true);
+  const [showWallet, setShowWallet] = useState(false);
+  const [splitRatio, setSplitRatio] = useState(50); // Code vs Preview split
+
+  const handleDrag = useCallback((e: React.MouseEvent) => {
+    const startX = e.clientX;
+    const startRatio = splitRatio;
+    const container = document.querySelector('.desktop-layout__main') as HTMLElement;
+    
+    if (!container) return;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = moveEvent.clientX - startX;
+      const containerWidth = container.offsetWidth;
+      const newRatio = startRatio + (deltaX / containerWidth) * 100;
+      setSplitRatio(Math.max(20, Math.min(80, newRatio)));
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [splitRatio]);
+
+  return (
+    <div className="desktop-layout">
+      {/* Header */}
+      <header className="desktop-layout__header">
+        <div className="desktop-layout__header-left">
+          <button 
+            className="desktop-layout__toggle-btn"
+            onClick={() => setShowSidebar(!showSidebar)}
+            title={showSidebar ? 'Hide sidebar' : 'Show sidebar'}
+          >
+            {showSidebar ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
+          </button>
+          <h1 className="desktop-layout__title">
+            <span className="desktop-layout__logo">🚀</span>
+            Arena AI Builder
+          </h1>
+        </div>
+
+        <div className="desktop-layout__header-right">
+          <button 
+            className={`desktop-layout__wallet-btn ${showWallet ? 'active' : ''}`}
+            onClick={() => setShowWallet(!showWallet)}
+          >
+            <Wallet size={18} />
+            <span>Wallet</span>
+          </button>
+          <button 
+            className="desktop-layout__toggle-btn"
+            onClick={() => setShowTerminal(!showTerminal)}
+            title={showTerminal ? 'Hide terminal' : 'Show terminal'}
+          >
+            {showTerminal ? <PanelBottomClose size={20} /> : <PanelBottomOpen size={20} />}
+          </button>
+          <button 
+            className="desktop-layout__settings-btn"
+            onClick={onOpenSettings}
+          >
+            <Settings size={20} />
+          </button>
+        </div>
+      </header>
+
+      <div className="desktop-layout__body">
+        {/* AI Chat Sidebar */}
+        {showSidebar && (
+          <aside className="desktop-layout__sidebar desktop-layout__sidebar--left">
+            {chatPanel}
+          </aside>
+        )}
+
+        {/* Main Editor Area */}
+        <div className="desktop-layout__main">
+          {/* Files + Code */}
+          <div 
+            className="desktop-layout__code-area"
+            style={{ width: `${splitRatio}%` }}
+          >
+            <div className="desktop-layout__files">
+              {filesPanel}
+            </div>
+            <div className="desktop-layout__editor">
+              {codePanel}
+            </div>
+          </div>
+
+          {/* Resize Handle */}
+          <div 
+            className="desktop-layout__resize-handle"
+            onMouseDown={handleDrag}
+          />
+
+          {/* Preview */}
+          <div 
+            className="desktop-layout__preview-area"
+            style={{ width: `${100 - splitRatio}%` }}
+          >
+            {previewPanel}
+          </div>
+        </div>
+
+        {/* Wallet Sidebar */}
+        {showWallet && (
+          <aside className="desktop-layout__sidebar desktop-layout__sidebar--right">
+            {walletPanel}
+          </aside>
+        )}
+      </div>
+
+      {/* Terminal */}
+      {showTerminal && (
+        <div className="desktop-layout__terminal">
+          {terminalPanel}
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+---
+
+## 27. `src/components/Layout/Layout.css`
+
+```css
+/* ==================== MOBILE LAYOUT ==================== */
+
+.mobile-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: #0f0f1a;
+  overflow: hidden;
+}
+
+.mobile-layout__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+  flex-shrink: 0;
+}
+
+.mobile-layout__menu-btn,
+.mobile-layout__settings-btn {
+  background: none;
+  border: none;
+  color: #cdd6f4;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.mobile-layout__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #cdd6f4;
+}
+
+.mobile-layout__content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.mobile-layout__nav {
+  display: flex;
+  background: #181825;
+  border-top: 1px solid #313244;
+  padding: 8px 4px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+
+.mobile-layout__nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: none;
+  border: none;
+  color: #6c7086;
+  font-size: 0.625rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.mobile-layout__nav-item.active {
+  color: #8b5cf6;
+}
+
+.mobile-layout__nav-item span {
+  white-space: nowrap;
+}
+
+/* Sidebar Overlay */
+.mobile-layout__sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+}
+
+.mobile-layout__sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 300px;
+  max-width: 80vw;
+  background: #181825;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.mobile-layout__sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #313244;
+}
+
+.mobile-layout__sidebar-header h2 {
+  font-size: 1.125rem;
+  color: #cdd6f4;
+}
+
+.mobile-layout__sidebar-header button {
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+}
+
+.mobile-layout__sidebar-wallet {
+  padding: 16px;
+  border-bottom: 1px solid #313244;
+}
+
+.mobile-layout__sidebar-nav {
+  flex: 1;
+  padding: 16px;
+}
+
+.mobile-layout__sidebar-nav button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: #cdd6f4;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mobile-layout__sidebar-nav button:hover {
+  background: #313244;
+}
+
+/* ==================== DESKTOP LAYOUT ==================== */
+
+.desktop-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #0f0f1a;
+  overflow: hidden;
+}
+
+.desktop-layout__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 52px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+  flex-shrink: 0;
+}
+
+.desktop-layout__header-left,
+.desktop-layout__header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.desktop-layout__toggle-btn,
+.desktop-layout__settings-btn {
+  background: none;
+  border: none;
+  color: #6c7086;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.desktop-layout__toggle-btn:hover,
+.desktop-layout__settings-btn:hover {
+  background: #313244;
+  color: #cdd6f4;
+}
+
+.desktop-layout__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #cdd6f4;
+}
+
+.desktop-layout__logo {
+  font-size: 1.25rem;
+}
+
+.desktop-layout__wallet-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #313244;
+  border: none;
+  border-radius: 8px;
+  color: #cdd6f4;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.desktop-layout__wallet-btn:hover {
+  background: #45475a;
+}
+
+.desktop-layout__wallet-btn.active {
+  background: #8b5cf6;
+}
+
+.desktop-layout__body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.desktop-layout__sidebar {
+  width: 380px;
+  flex-shrink: 0;
+  border-right: 1px solid #313244;
+  overflow: hidden;
+}
+
+.desktop-layout__sidebar--left {
+  border-right: 1px solid #313244;
+}
+
+.desktop-layout__sidebar--right {
+  width: 320px;
+  border-left: 1px solid #313244;
+  border-right: none;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.desktop-layout__main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.desktop-layout__code-area {
+  display: flex;
+  overflow: hidden;
+}
+
+.desktop-layout__files {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid #313244;
+  overflow: hidden;
+}
+
+.desktop-layout__editor {
+  flex: 1;
+  overflow: hidden;
+}
+
+.desktop-layout__resize-handle {
+  width: 4px;
+  background: #313244;
+  cursor: col-resize;
+  transition: background 0.2s;
+}
+
+.desktop-layout__resize-handle:hover {
+  background: #8b5cf6;
+}
+
+.desktop-layout__preview-area {
+  overflow: hidden;
+}
+
+.desktop-layout__terminal {
+  flex-shrink: 0;
+  border-top: 1px solid #313244;
+}
+
+/* Responsive: Switch to mobile layout on smaller screens */
+@media (max-width: 1024px) {
+  .desktop-layout__sidebar {
+    width: 320px;
+  }
+
+  .desktop-layout__files {
+    width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .desktop-layout {
+    display: none;
+  }
+}
+```
+
+---
+
+## 28. `src/services/aiService.ts`
+
+```typescript
+import type { Mes
