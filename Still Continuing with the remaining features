@@ -1,0 +1,1577 @@
+Continuing with the remaining features:
+
+---
+
+## `src/components/AgentMerge/AgentMergeModal.tsx` (continued)
+
+```tsx
+          {/* Step 4: Complete */}
+          {step === 'complete' && mergeResult && (
+            <div className="agent-merge__step">
+              <div className={`agent-merge__result ${mergeResult.success ? 'success' : 'error'}`}>
+                {mergeResult.success ? (
+                  <CheckCircle size={48} />
+                ) : (
+                  <AlertTriangle size={48} />
+                )}
+                <h3>{mergeResult.success ? 'Merge Complete!' : 'Merge Failed'}</h3>
+                <p>{mergeResult.summary}</p>
+              </div>
+
+              {mergeResult.conflicts.length > 0 && (
+                <div className="agent-merge__conflicts">
+                  <h4>Resolved Conflicts ({mergeResult.conflicts.length})</h4>
+                  {mergeResult.conflicts.map((conflict, i) => (
+                    <div key={i} className="agent-merge__conflict">
+                      <FileCode size={16} />
+                      <span>{conflict.filePath}</span>
+                      <span className={`agent-merge__resolution agent-merge__resolution--${conflict.resolution}`}>
+                        {conflict.resolution === 'agent' && 'Used agent code'}
+                        {conflict.resolution === 'existing' && 'Kept existing'}
+                        {conflict.resolution === 'manual' && 'Needs review'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="agent-merge__actions">
+                <button 
+                  className="agent-merge__btn agent-merge__btn--primary"
+                  onClick={handleComplete}
+                >
+                  <CheckCircle size={18} />
+                  Apply Changes
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## `src/components/AgentMerge/AgentMergeModal.css`
+
+```css
+.agent-merge__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.agent-merge {
+  background: #1e1e2e;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.agent-merge__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+  border-bottom: 1px solid #313244;
+}
+
+.agent-merge__header-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.agent-merge__header h2 {
+  font-size: 1.25rem;
+  color: #cdd6f4;
+  margin-bottom: 4px;
+}
+
+.agent-merge__header p {
+  font-size: 0.875rem;
+  color: #6c7086;
+}
+
+.agent-merge__close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.agent-merge__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.agent-merge__step h3 {
+  font-size: 1rem;
+  color: #cdd6f4;
+  margin-bottom: 20px;
+}
+
+.agent-merge__step--centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.agent-merge__step--centered svg {
+  color: #8b5cf6;
+  margin-bottom: 20px;
+}
+
+.agent-merge__step--centered p {
+  color: #6c7086;
+}
+
+.agent-merge__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #6c7086;
+}
+
+.agent-merge__empty svg {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.agent-merge__empty p {
+  color: #cdd6f4;
+  margin-bottom: 8px;
+}
+
+.agent-merge__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.agent-merge__item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #11111b;
+  border: 1px solid #313244;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.agent-merge__item:hover {
+  border-color: #8b5cf6;
+  transform: translateX(4px);
+}
+
+.agent-merge__item-icon {
+  width: 48px;
+  height: 48px;
+  background: #313244;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.agent-merge__item-info {
+  flex: 1;
+}
+
+.agent-merge__item-info h4 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #cdd6f4;
+  margin-bottom: 4px;
+}
+
+.agent-merge__item-info p {
+  font-size: 0.8125rem;
+  color: #6c7086;
+  margin-bottom: 8px;
+}
+
+.agent-merge__item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: #45475a;
+}
+
+.agent-merge__item > svg:last-child {
+  color: #6c7086;
+}
+
+/* Preview */
+.agent-merge__preview {
+  background: #11111b;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.agent-merge__preview-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+  color: #cdd6f4;
+  font-weight: 500;
+}
+
+.agent-merge__files,
+.agent-merge__capabilities {
+  padding: 16px;
+  border-bottom: 1px solid #313244;
+}
+
+.agent-merge__files h4,
+.agent-merge__capabilities h4 {
+  font-size: 0.75rem;
+  color: #6c7086;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.agent-merge__file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  color: #a6adc8;
+  font-size: 0.875rem;
+}
+
+.agent-merge__file svg {
+  color: #f9e2af;
+}
+
+.agent-merge__file-lang {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  padding: 2px 8px;
+  background: #313244;
+  border-radius: 10px;
+  color: #6c7086;
+}
+
+.agent-merge__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.agent-merge__tags span {
+  padding: 6px 12px;
+  background: #313244;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: #a6adc8;
+}
+
+.agent-merge__warning {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  color: #fab387;
+  font-size: 0.8125rem;
+}
+
+/* Actions */
+.agent-merge__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.agent-merge__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.agent-merge__btn--secondary {
+  background: #313244;
+  border: none;
+  color: #cdd6f4;
+}
+
+.agent-merge__btn--secondary:hover {
+  background: #45475a;
+}
+
+.agent-merge__btn--primary {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border: none;
+  color: #fff;
+}
+
+.agent-merge__btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+}
+
+/* Result */
+.agent-merge__result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.agent-merge__result.success svg {
+  color: #a6e3a1;
+}
+
+.agent-merge__result.error svg {
+  color: #f38ba8;
+}
+
+.agent-merge__result h3 {
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+
+.agent-merge__result p {
+  color: #6c7086;
+}
+
+.agent-merge__conflicts {
+  background: #11111b;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 20px;
+}
+
+.agent-merge__conflicts h4 {
+  font-size: 0.875rem;
+  color: #cdd6f4;
+  margin-bottom: 12px;
+}
+
+.agent-merge__conflict {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #313244;
+  font-size: 0.875rem;
+  color: #a6adc8;
+}
+
+.agent-merge__conflict:last-child {
+  border-bottom: none;
+}
+
+.agent-merge__conflict svg {
+  color: #f9e2af;
+}
+
+.agent-merge__resolution {
+  margin-left: auto;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+
+.agent-merge__resolution--agent {
+  background: rgba(166, 227, 161, 0.15);
+  color: #a6e3a1;
+}
+
+.agent-merge__resolution--existing {
+  background: rgba(137, 180, 250, 0.15);
+  color: #89b4fa;
+}
+
+.agent-merge__resolution--manual {
+  background: rgba(250, 179, 135, 0.15);
+  color: #fab387;
+}
+```
+
+---
+
+# Feature 5: Collaborative Editing (WebRTC)
+
+## `src/services/collaborationService.ts`
+
+```typescript
+import type { FileNode } from '../types';
+
+export interface Collaborator {
+  id: string;
+  name: string;
+  color: string;
+  cursor?: { file: string; line: number; column: number };
+  selection?: { start: number; end: number };
+  isOnline: boolean;
+  avatar?: string;
+}
+
+export interface CollaborationRoom {
+  id: string;
+  name: string;
+  projectId: string;
+  ownerId: string;
+  collaborators: Collaborator[];
+  createdAt: Date;
+}
+
+export interface SyncMessage {
+  type: 'file-change' | 'cursor-move' | 'selection' | 'join' | 'leave' | 'chat';
+  userId: string;
+  payload: any;
+  timestamp: number;
+}
+
+// CRDT-like operation for conflict-free editing
+export interface Operation {
+  id: string;
+  type: 'insert' | 'delete';
+  position: number;
+  content?: string;
+  length?: number;
+  userId: string;
+  timestamp: number;
+}
+
+const COLORS = [
+  '#f38ba8', '#fab387', '#f9e2af', '#a6e3a1',
+  '#94e2d5', '#89b4fa', '#cba6f7', '#f5c2e7',
+];
+
+export class CollaborationService {
+  private peerConnection: RTCPeerConnection | null = null;
+  private dataChannel: RTCDataChannel | null = null;
+  private signalingWs: WebSocket | null = null;
+  private roomId: string | null = null;
+  private userId: string;
+  private userName: string;
+  private collaborators: Map<string, Collaborator> = new Map();
+  private operationBuffer: Operation[] = [];
+  private onMessageCallback: ((msg: SyncMessage) => void) | null = null;
+  private onCollaboratorChangeCallback: ((collaborators: Collaborator[]) => void) | null = null;
+
+  constructor() {
+    this.userId = crypto.randomUUID();
+    this.userName = `User ${Math.floor(Math.random() * 1000)}`;
+  }
+
+  // Set user info
+  setUserInfo(name: string) {
+    this.userName = name;
+  }
+
+  // Create a new collaboration room
+  async createRoom(projectId: string, projectName: string): Promise<string> {
+    const roomId = this.generateRoomId();
+    this.roomId = roomId;
+
+    await this.initializeConnection(roomId, true);
+
+    return roomId;
+  }
+
+  // Join an existing room
+  async joinRoom(roomId: string): Promise<void> {
+    this.roomId = roomId;
+    await this.initializeConnection(roomId, false);
+  }
+
+  // Leave the current room
+  async leaveRoom(): Promise<void> {
+    this.sendMessage({
+      type: 'leave',
+      userId: this.userId,
+      payload: { name: this.userName },
+      timestamp: Date.now(),
+    });
+
+    this.cleanup();
+  }
+
+  // Initialize WebRTC connection
+  private async initializeConnection(roomId: string, isHost: boolean): Promise<void> {
+    // Create peer connection with STUN/TURN servers
+    this.peerConnection = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        // Add your TURN server here for production
+      ],
+    });
+
+    // Set up data channel
+    if (isHost) {
+      this.dataChannel = this.peerConnection.createDataChannel('collaboration', {
+        ordered: true,
+      });
+      this.setupDataChannel();
+    } else {
+      this.peerConnection.ondatachannel = (event) => {
+        this.dataChannel = event.channel;
+        this.setupDataChannel();
+      };
+    }
+
+    // Handle ICE candidates
+    this.peerConnection.onicecandidate = (event) => {
+      if (event.candidate && this.signalingWs) {
+        this.signalingWs.send(JSON.stringify({
+          type: 'ice-candidate',
+          roomId,
+          candidate: event.candidate,
+        }));
+      }
+    };
+
+    // Connect to signaling server
+    await this.connectSignaling(roomId, isHost);
+
+    // Add self as collaborator
+    const selfColor = COLORS[Math.floor(Math.random() * COLORS.length)];
+    this.collaborators.set(this.userId, {
+      id: this.userId,
+      name: this.userName,
+      color: selfColor,
+      isOnline: true,
+    });
+  }
+
+  // Connect to signaling server
+  private async connectSignaling(roomId: string, isHost: boolean): Promise<void> {
+    return new Promise((resolve, reject) => {
+      // Replace with your signaling server URL
+      const wsUrl = `wss://your-signaling-server.com/rooms/${roomId}`;
+      
+      // For demo, we'll use a mock implementation
+      console.log(`Connecting to room: ${roomId}, isHost: ${isHost}`);
+      
+      // Mock successful connection
+      setTimeout(() => {
+        // Announce join
+        this.sendMessage({
+          type: 'join',
+          userId: this.userId,
+          payload: {
+            name: this.userName,
+            color: this.collaborators.get(this.userId)?.color,
+          },
+          timestamp: Date.now(),
+        });
+        resolve();
+      }, 500);
+    });
+  }
+
+  // Set up data channel handlers
+  private setupDataChannel(): void {
+    if (!this.dataChannel) return;
+
+    this.dataChannel.onopen = () => {
+      console.log('Data channel opened');
+    };
+
+    this.dataChannel.onmessage = (event) => {
+      try {
+        const message: SyncMessage = JSON.parse(event.data);
+        this.handleMessage(message);
+      } catch (error) {
+        console.error('Failed to parse message:', error);
+      }
+    };
+
+    this.dataChannel.onclose = () => {
+      console.log('Data channel closed');
+    };
+  }
+
+  // Handle incoming messages
+  private handleMessage(message: SyncMessage): void {
+    switch (message.type) {
+      case 'join':
+        const newCollaborator: Collaborator = {
+          id: message.userId,
+          name: message.payload.name,
+          color: message.payload.color || COLORS[this.collaborators.size % COLORS.length],
+          isOnline: true,
+        };
+        this.collaborators.set(message.userId, newCollaborator);
+        this.notifyCollaboratorChange();
+        break;
+
+      case 'leave':
+        this.collaborators.delete(message.userId);
+        this.notifyCollaboratorChange();
+        break;
+
+      case 'cursor-move':
+        const collaborator = this.collaborators.get(message.userId);
+        if (collaborator) {
+          collaborator.cursor = message.payload;
+          this.notifyCollaboratorChange();
+        }
+        break;
+
+      case 'file-change':
+        // Apply the operation using CRDT logic
+        this.applyOperation(message.payload);
+        break;
+
+      case 'selection':
+        const collab = this.collaborators.get(message.userId);
+        if (collab) {
+          collab.selection = message.payload;
+          this.notifyCollaboratorChange();
+        }
+        break;
+
+      case 'chat':
+        // Handle chat messages
+        break;
+    }
+
+    // Notify callback
+    if (this.onMessageCallback) {
+      this.onMessageCallback(message);
+    }
+  }
+
+  // Send a message to all peers
+  sendMessage(message: SyncMessage): void {
+    if (this.dataChannel?.readyState === 'open') {
+      this.dataChannel.send(JSON.stringify(message));
+    }
+  }
+
+  // Send file change
+  sendFileChange(filePath: string, operation: Operation): void {
+    this.operationBuffer.push(operation);
+
+    this.sendMessage({
+      type: 'file-change',
+      userId: this.userId,
+      payload: {
+        filePath,
+        operation,
+      },
+      timestamp: Date.now(),
+    });
+  }
+
+  // Send cursor position
+  sendCursorMove(file: string, line: number, column: number): void {
+    this.sendMessage({
+      type: 'cursor-move',
+      userId: this.userId,
+      payload: { file, line, column },
+      timestamp: Date.now(),
+    });
+  }
+
+  // Send selection
+  sendSelection(file: string, start: number, end: number): void {
+    this.sendMessage({
+      type: 'selection',
+      userId: this.userId,
+      payload: { file, start, end },
+      timestamp: Date.now(),
+    });
+  }
+
+  // Apply operation (CRDT-like merge)
+  private applyOperation(payload: { filePath: string; operation: Operation }): void {
+    const { operation } = payload;
+
+    // Transform operation against buffered operations
+    const transformedOp = this.transformOperation(operation);
+
+    // Notify callback to apply the change
+    if (this.onMessageCallback) {
+      this.onMessageCallback({
+        type: 'file-change',
+        userId: operation.userId,
+        payload: { ...payload, operation: transformedOp },
+        timestamp: Date.now(),
+      });
+    }
+  }
+
+  // Transform operation for conflict resolution (OT-like)
+  private transformOperation(op: Operation): Operation {
+    let transformed = { ...op };
+
+    for (const bufferedOp of this.operationBuffer) {
+      if (bufferedOp.timestamp < op.timestamp && bufferedOp.id !== op.id) {
+        // Transform position based on buffered operation
+        if (bufferedOp.type === 'insert' && bufferedOp.position <= transformed.position) {
+          transformed.position += bufferedOp.content?.length || 0;
+        } else if (bufferedOp.type === 'delete' && bufferedOp.position < transformed.position) {
+          transformed.position -= Math.min(
+            bufferedOp.length || 0,
+            transformed.position - bufferedOp.position
+          );
+        }
+      }
+    }
+
+    return transformed;
+  }
+
+  // Get current collaborators
+  getCollaborators(): Collaborator[] {
+    return Array.from(this.collaborators.values());
+  }
+
+  // Set message callback
+  onMessage(callback: (msg: SyncMessage) => void): void {
+    this.onMessageCallback = callback;
+  }
+
+  // Set collaborator change callback
+  onCollaboratorChange(callback: (collaborators: Collaborator[]) => void): void {
+    this.onCollaboratorChangeCallback = callback;
+  }
+
+  private notifyCollaboratorChange(): void {
+    if (this.onCollaboratorChangeCallback) {
+      this.onCollaboratorChangeCallback(this.getCollaborators());
+    }
+  }
+
+  // Generate room ID
+  private generateRoomId(): string {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  }
+
+  // Get shareable link
+  getShareLink(): string {
+    if (!this.roomId) return '';
+    return `${window.location.origin}/collab/${this.roomId}`;
+  }
+
+  // Cleanup
+  private cleanup(): void {
+    this.dataChannel?.close();
+    this.peerConnection?.close();
+    this.signalingWs?.close();
+    this.dataChannel = null;
+    this.peerConnection = null;
+    this.signalingWs = null;
+    this.roomId = null;
+    this.collaborators.clear();
+    this.operationBuffer = [];
+  }
+}
+
+export const collaborationService = new CollaborationService();
+```
+
+---
+
+## `src/components/Collaboration/CollaborationPanel.tsx`
+
+```tsx
+import React, { useState, useEffect } from 'react';
+import { 
+  Users, 
+  Link2, 
+  Copy, 
+  Check, 
+  UserPlus,
+  LogOut,
+  Circle,
+} from 'lucide-react';
+import { collaborationService, type Collaborator } from '../../services/collaborationService';
+import toast from 'react-hot-toast';
+import './CollaborationPanel.css';
+
+interface CollaborationPanelProps {
+  projectId: string;
+  projectName: string;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const CollaborationPanel: React.FC<CollaborationPanelProps> = ({
+  projectId,
+  projectName,
+  isOpen,
+  onClose,
+}) => {
+  const [collaborators, setCollaborators] = useState<Collaborator[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [roomId, setRoomId] = useState<string | null>(null);
+  const [shareLink, setShareLink] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+
+  useEffect(() => {
+    collaborationService.onCollaboratorChange((collabs) => {
+      setCollaborators(collabs);
+    });
+  }, []);
+
+  const handleCreateRoom = async () => {
+    try {
+      const id = await collaborationService.createRoom(projectId, projectName);
+      setRoomId(id);
+      setShareLink(collaborationService.getShareLink());
+      setIsConnected(true);
+      toast.success('Collaboration room created!');
+    } catch (error) {
+      toast.error('Failed to create room');
+    }
+  };
+
+  const handleJoinRoom = async () => {
+    if (!joinCode.trim()) {
+      toast.error('Please enter a room code');
+      return;
+    }
+
+    try {
+      await collaborationService.joinRoom(joinCode.trim());
+      setRoomId(joinCode.trim());
+      setIsConnected(true);
+      toast.success('Joined collaboration room!');
+    } catch (error) {
+      toast.error('Failed to join room');
+    }
+  };
+
+  const handleLeaveRoom = async () => {
+    await collaborationService.leaveRoom();
+    setIsConnected(false);
+    setRoomId(null);
+    setCollaborators([]);
+    toast.success('Left collaboration room');
+  };
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(shareLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    toast.success('Link copied!');
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="collab-panel">
+      <div className="collab-panel__header">
+        <Users size={20} />
+        <h3>Collaboration</h3>
+        <button className="collab-panel__close" onClick={onClose}>×</button>
+      </div>
+
+      <div className="collab-panel__content">
+        {!isConnected ? (
+          <div className="collab-panel__connect">
+            <div className="collab-panel__section">
+              <h4>Start a Session</h4>
+              <p>Create a new room and invite others to collaborate</p>
+              <button 
+                className="collab-panel__btn collab-panel__btn--primary"
+                onClick={handleCreateRoom}
+              >
+                <UserPlus size={18} />
+                Create Room
+              </button>
+            </div>
+
+            <div className="collab-panel__divider">
+              <span>or</span>
+            </div>
+
+            <div className="collab-panel__section">
+              <h4>Join a Session</h4>
+              <p>Enter a room code to join an existing session</p>
+              <div className="collab-panel__join">
+                <input
+                  type="text"
+                  placeholder="Enter room code..."
+                  value={joinCode}
+                  onChange={(e) => setJoinCode(e.target.value)}
+                />
+                <button 
+                  className="collab-panel__btn collab-panel__btn--secondary"
+                  onClick={handleJoinRoom}
+                >
+                  Join
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="collab-panel__connected">
+            {/* Room Info */}
+            <div className="collab-panel__room">
+              <div className="collab-panel__room-info">
+                <span className="collab-panel__room-label">Room Code</span>
+                <code>{roomId}</code>
+              </div>
+              <button 
+                className="collab-panel__copy"
+                onClick={handleCopyLink}
+              >
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+              </button>
+            </div>
+
+            {/* Share Link */}
+            <div className="collab-panel__share">
+              <Link2 size={16} />
+              <input 
+                type="text" 
+                value={shareLink} 
+                readOnly 
+              />
+              <button onClick={handleCopyLink}>
+                {copied ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+            </div>
+
+            {/* Collaborators */}
+            <div className="collab-panel__users">
+              <h4>Collaborators ({collaborators.length})</h4>
+              <div className="collab-panel__user-list">
+                {collaborators.map((collab) => (
+                  <div key={collab.id} className="collab-panel__user">
+                    <div 
+                      className="collab-panel__user-avatar"
+                      style={{ backgroundColor: collab.color }}
+                    >
+                      {collab.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="collab-panel__user-info">
+                      <span className="collab-panel__user-name">
+                        {collab.name}
+                        {collab.id === collaborationService['userId'] && ' (You)'}
+                      </span>
+                      {collab.cursor && (
+                        <span className="collab-panel__user-location">
+                          {collab.cursor.file}
+                        </span>
+                      )}
+                    </div>
+                    <Circle 
+                      size={8} 
+                      fill={collab.isOnline ? '#a6e3a1' : '#6c7086'}
+                      stroke="none"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Leave Button */}
+            <button 
+              className="collab-panel__leave"
+              onClick={handleLeaveRoom}
+            >
+              <LogOut size={16} />
+              Leave Room
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## `src/components/Collaboration/CollaborationPanel.css`
+
+```css
+.collab-panel {
+  background: #1e1e2e;
+  border-radius: 12px;
+  border: 1px solid #313244;
+  width: 300px;
+  overflow: hidden;
+}
+
+.collab-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border-bottom: 1px solid #313244;
+  color: #cdd6f4;
+}
+
+.collab-panel__header h3 {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.collab-panel__close {
+  background: none;
+  border: none;
+  color: #6c7086;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.collab-panel__content {
+  padding: 16px;
+}
+
+.collab-panel__section {
+  margin-bottom: 16px;
+}
+
+.collab-panel__section h4 {
+  font-size: 0.875rem;
+  color: #cdd6f4;
+  margin-bottom: 4px;
+}
+
+.collab-panel__section p {
+  font-size: 0.75rem;
+  color: #6c7086;
+  margin-bottom: 12px;
+}
+
+.collab-panel__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.collab-panel__btn--primary {
+  background: #8b5cf6;
+  border: none;
+  color: #fff;
+}
+
+.collab-panel__btn--primary:hover {
+  background: #7c3aed;
+}
+
+.collab-panel__btn--secondary {
+  background: #313244;
+  border: none;
+  color: #cdd6f4;
+  width: auto;
+  padding: 12px 20px;
+}
+
+.collab-panel__divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0;
+  color: #6c7086;
+  font-size: 0.75rem;
+}
+
+.collab-panel__divider::before,
+.collab-panel__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #313244;
+}
+
+.collab-panel__join {
+  display: flex;
+  gap: 8px;
+}
+
+.collab-panel__join input {
+  flex: 1;
+  padding: 12px;
+  background: #11111b;
+  border: 1px solid #313244;
+  border-radius: 8px;
+  color: #cdd6f4;
+  font-size: 0.875rem;
+}
+
+.collab-panel__room {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: #11111b;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.collab-panel__room-label {
+  font-size: 0.6875rem;
+  color: #6c7086;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.collab-panel__room code {
+  font-family: 'Fira Code', monospace;
+  font-size: 1rem;
+  color: #8b5cf6;
+}
+
+.collab-panel__copy {
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.collab-panel__share {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  background: #11111b;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.collab-panel__share svg:first-child {
+  color: #6c7086;
+  flex-shrink: 0;
+}
+
+.collab-panel__share input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #a6adc8;
+  font-size: 0.75rem;
+  min-width: 0;
+}
+
+.collab-panel__share button {
+  background: none;
+  border: none;
+  color: #6c7086;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.collab-panel__users h4 {
+  font-size: 0.75rem;
+  color: #6c7086;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.collab-panel__user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.collab-panel__user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: #11111b;
+  border-radius: 8px;
+}
+
+.collab-panel__user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.collab-panel__user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.collab-panel__user-name {
+  display: block;
+  font-size: 0.875rem;
+  color: #cdd6f4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collab-panel__user-location {
+  font-size: 0.6875rem;
+  color: #6c7086;
+}
+
+.collab-panel__leave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  background: none;
+  border: 1px solid #f38ba8;
+  border-radius: 8px;
+  color: #f38ba8;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.collab-panel__leave:hover {
+  background: rgba(243, 139, 168, 0.1);
+}
+```
+
+---
+
+# Feature 6: Version Control (Git-like History)
+
+## `src/services/versionControlService.ts`
+
+```typescript
+import type { FileNode } from '../types';
+
+export interface Commit {
+  id: string;
+  message: string;
+  timestamp: Date;
+  author: string;
+  parentId: string | null;
+  snapshot: FileSnapshot[];
+  diff: FileDiff[];
+}
+
+export interface FileSnapshot {
+  path: string;
+  content: string;
+  hash: string;
+}
+
+export interface FileDiff {
+  path: string;
+  type: 'added' | 'modified' | 'deleted';
+  additions: number;
+  deletions: number;
+  hunks: DiffHunk[];
+}
+
+export interface DiffHunk {
+  oldStart: number;
+  oldLines: number;
+  newStart: number;
+  newLines: number;
+  lines: DiffLine[];
+}
+
+export interface DiffLine {
+  type: 'context' | 'add' | 'delete';
+  content: string;
+  oldLineNumber?: number;
+  newLineNumber?: number;
+}
+
+export interface Branch {
+  name: string;
+  headCommitId: string;
+  isActive: boolean;
+}
+
+export class VersionControlService {
+  private commits: Map<string, Commit> = new Map();
+  private branches: Map<string, Branch> = new Map();
+  private currentBranch: string = 'main';
+  private stagingArea: Map<string, string> = new Map(); // path -> content
+
+  constructor() {
+    // Initialize main branch
+    this.branches.set('main', {
+      name: 'main',
+      headCommitId: '',
+      isActive: true,
+    });
+  }
+
+  // Create initial commit
+  initRepository(files: FileNode[], author: string): Commit {
+    const snapshot = this.createSnapshot(files);
+    const commit = this.createCommit('Initial commit', author, snapshot, null);
+    
+    // Update branch head
+    const branch = this.branches.get(this.currentBranch);
+    if (branch) {
+      branch.headCommitId = commit.id;
+    }
+
+    return commit;
+  }
+
+  // Stage files for commit
+  stageFile(path: string, content: string): void {
+    this.stagingArea.set(path, content);
+  }
+
+  // Unstage file
+  unstageFile(path: string): void {
+    this.stagingArea.delete(path);
+  }
+
+  // Clear staging area
+  clearStaging(): void {
+    this.stagingArea.clear();
+  }
+
+  // Get staged files
+  getStagedFiles(): { path: string; content: string }[] {
+    return Array.from(this.stagingArea.entries()).map(([path, content]) => ({
+      path,
+      content,
+    }));
+  }
+
+  // Create a commit
+  commit(message: string, author: string, currentFiles: FileNode[]): Commit {
+    const parentCommit = this.getCurrentCommit();
+    const snapshot = this.createSnapshot(currentFiles);
+    const diff = parentCommit 
+      ? this.calculateDiff(parentCommit.snapshot, snapshot)
+      : snapshot.map(s => ({
+          path: s.path,
+          type: 'added' as const,
+          additions: s.content.split('\n').length,
+          deletions: 0,
+          hunks: [],
+        }));
+
+    const commit = this.createCommit(
+      message,
+      author,
+      snapshot,
+      parentCommit?.id || null,
+      diff
+    );
+
+    // Update branch head
+    const branch = this.branches.get(this.currentBranch);
+    if (branch) {
+      branch.headCommitId = commit.id;
+    }
+
+    // Clear staging area
+    this.clearStaging();
+
+    return commit;
+  }
+
+  // Get current commit
+  getCurrentCommit(): Commit | null {
+    const branch = this.branches.get(this.currentBranch);
+    if (!branch || !branch.headCommitId) return null;
+    return this.commits.get(branch.headCommitId) || null;
+  }
+
+  // Get commit history
+  getHistory(limit?: number): Commit[] {
+    const history: Commit[] = [];
+    let current = this.getCurrentCommit();
+
+    while (current && (!limit || history.length < limit)) {
+      history.push(current);
+      current = current.parentId 
+        ? this.commits.get(current.parentId) || null 
+        : null;
+    }
+
+    return history;
+  }
+
+  // Get commit by ID
+  getCommit(id: string): Commit | null {
+    return this.commits.get(id) || null;
+  }
+
+  // Checkout a specific commit
+  checkout(commitId: string): FileNode[] {
+    const commit = this.commits.get(commitId);
+    if (!commit) throw new Error('Commit not found');
+
+    return this.snapshotToFileTree(commit.snapshot);
+  }
+
+  // Create a new branch
+  createBranch(name: string): Branch {
+    const currentCommit = this.getCurrentCommit();
+    const branch: Branch = {
+      name,
+      headCommitId: currentCommit?.id || '',
+      isActive: false,
+    };
+
+    this.branches.set(name, branch);
+    return branch;
+  }
+
+  // Switch branch
+  switchBranch(name: string): FileNode[] | null {
+    const branch = this.branches.get(name);
+    if (!branch) return null;
+
+    // Deactivate current branch
+    const currentBranch = this.branches.get(this.currentBranch);
+    if (currentBranch) {
+      currentBranch.isActive = false;
+    }
+
+    // Activate new branch
+    branch.isActive = true;
+    this.currentBranch = name;
+
+    // Return files at branch head
+    if (branch.headCommitId) {
+      return this.checkout(branch.headCommitId);
+    }
+
+    return null;
+  }
+
+  // Get all branches
+  getBranches(): Branch[] {
+    return Array.from(this.branches.values());
+  }
+
+  // Revert to a specific commit
+  revert(commitId: string): FileNode[] {
+    const commit = this.commits.get(commitId);
+    if (!commit) throw new Error('Commit not found');
+
+    // Create a revert commit
+    const files = this.snapshotToFileTree(commit.snapshot);
+    this.commit(
+      `Revert to "${commit.message}"`,
+      commit.author,
+      files
+    );
+
+    return files;
+  }
+
+  // Calculate diff between two snapshots
+  private calculateDiff(oldSnapshot: FileSnapshot[], newSnapshot: FileSnapshot[]): FileDiff[] {
+    const diffs: FileDiff[] = [];
+    const oldMap = new Map(oldSnapshot.map(s => [s.path, s]));
+    const newMap = new Map(newSnapshot.map(s => [s.path, s]));
+
+    // Check for modified and deleted files
+    for (const [path, oldFile] of oldMap) {
+      const newFile = newMap.get(path);
+      
+      if (!newFile) {
+        // File deleted
+        diffs.push({
+          path,
+          type: 'deleted',
+          additions: 0,
+          deletions: oldFile.content.split('\n').length,
+          hunks: this.createHunks(oldFile.content, ''),
+        });
+      } else if (oldFile.hash !== newFile.hash) {
+        // File modified
+        const hunks = this.createHunks(oldFile.content, newFile.content);
+        const { additions, deletions } = this.countChanges(hunks);
+        diffs.push({
+          path,
+          type: 'modified',
+          additions,
+          deletions,
+          hunks,
+        });
+      }
+    }
+
+    // Check for added files
+    for (const [path, newFile] of newMap) {
+      if (!oldMap.has(path)) {
+        diffs.push({
+          path,
+          type: 'added',
+          additions: newFile.content.split('\n').length,
+          deletions: 0,
+          hunks: this.createHunks('', newFile.content),
+        });
+      }
+    }
+
+    return diffs;
+  }
+
+  // Create diff hunks using Myers diff algorithm (simplified)
+  private createHunks(old
