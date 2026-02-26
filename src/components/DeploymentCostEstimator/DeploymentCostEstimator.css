@@ -1,0 +1,342 @@
+.deployment-estimator {
+  background: #1e1e2e;
+  border-radius: 12px;
+  border: 1px solid #313244;
+  overflow: hidden;
+}
+
+.deployment-estimator__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+  color: #cdd6f4;
+}
+
+.deployment-estimator__header h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.deployment-estimator__header svg {
+  color: #8b5cf6;
+}
+
+.deployment-estimator__close {
+  background: none;
+  border: none;
+  color: #a0a0b0;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.deployment-estimator__close:hover {
+  color: #fff;
+}
+
+.deployment-estimator__content {
+  padding: 16px;
+}
+
+.deployment-estimator__section {
+  margin-bottom: 20px;
+}
+
+.deployment-estimator__section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: #a0a0b0;
+  font-weight: 500;
+}
+
+.deployment-estimator__section h4 svg {
+  color: #8b5cf6;
+}
+
+/* Framework Grid */
+.deployment-estimator__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.deployment-estimator__option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 8px;
+  background: #181825;
+  border: 2px solid #313244;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.deployment-estimator__option-btn:hover {
+  border-color: #45475a;
+}
+
+.deployment-estimator__option-btn.active {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.deployment-estimator__option-icon {
+  font-size: 1.25rem;
+}
+
+.deployment-estimator__option-name {
+  font-size: 0.75rem;
+  color: #cdd6f4;
+}
+
+/* Platform Options */
+.deployment-estimator__platform-options {
+  display: flex;
+  gap: 8px;
+}
+
+.deployment-estimator__platform-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #181825;
+  border: 2px solid #313244;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #cdd6f4;
+  font-weight: 500;
+}
+
+.deployment-estimator__platform-btn:hover {
+  border-color: #45475a;
+}
+
+.deployment-estimator__platform-btn.active {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.deployment-estimator__platform-icon {
+  font-weight: bold;
+  color: #8b5cf6;
+}
+
+/* Sliders */
+.deployment-estimator__slider-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.deployment-estimator__slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: #313244;
+  border-radius: 3px;
+  outline: none;
+}
+
+.deployment-estimator__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #8b5cf6;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.deployment-estimator__slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.deployment-estimator__slider-value {
+  min-width: 80px;
+  text-align: right;
+  font-size: 0.875rem;
+  color: #cdd6f4;
+  font-weight: 500;
+}
+
+.deployment-estimator__slider-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #6c7086;
+}
+
+/* Cost Breakdown */
+.deployment-estimator__breakdown {
+  background: #181825;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.deployment-estimator__breakdown h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: #cdd6f4;
+}
+
+.deployment-estimator__costs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.deployment-estimator__cost-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #a0a0b0;
+}
+
+.deployment-estimator__cost-row--total {
+  font-size: 1.125rem;
+  color: #cdd6f4;
+  font-weight: 600;
+}
+
+.deployment-estimator__cost-row--total span:last-child {
+  color: #8b5cf6;
+}
+
+.deployment-estimator__cost-divider {
+  height: 1px;
+  background: #313244;
+  margin: 4px 0;
+}
+
+/* Compare Button */
+.deployment-estimator__compare-btn {
+  width: 100%;
+  padding: 12px;
+  background: #313244;
+  border: none;
+  border-radius: 8px;
+  color: #cdd6f4;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.deployment-estimator__compare-btn:hover {
+  background: #45475a;
+}
+
+/* Comparison */
+.deployment-estimator__comparison {
+  background: #181825;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.deployment-estimator__comparison h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: #cdd6f4;
+}
+
+.deployment-estimator__comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.deployment-estimator__comparison-card {
+  background: #1e1e2e;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #313244;
+}
+
+.deployment-estimator__comparison-header {
+  margin-bottom: 8px;
+}
+
+.deployment-estimator__comparison-name {
+  font-weight: 600;
+  color: #cdd6f4;
+  font-size: 0.875rem;
+}
+
+.deployment-estimator__comparison-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.deployment-estimator__comparison-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.deployment-estimator__comparison-stat span:first-child {
+  color: #6c7086;
+}
+
+.deployment-estimator__comparison-stat span:last-child {
+  color: #cdd6f4;
+}
+
+.deployment-estimator__comparison-stat .free {
+  color: #a6e3a1;
+}
+
+/* Notice */
+.deployment-estimator__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: #6c7086;
+}
+
+.deployment-estimator__notice svg {
+  color: #8b5cf6;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .deployment-estimator__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .deployment-estimator__comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .deployment-estimator__content {
+    padding: 12px;
+  }
+}

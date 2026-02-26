@@ -1,0 +1,303 @@
+.fee-calculator {
+  background: #1e1e2e;
+  border-radius: 12px;
+  border: 1px solid #313244;
+  overflow: hidden;
+}
+
+.fee-calculator__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+  color: #cdd6f4;
+}
+
+.fee-calculator__header h3 {
+  flex: 1;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.fee-calculator__header svg {
+  color: #8b5cf6;
+}
+
+.fee-calculator__close {
+  background: none;
+  border: none;
+  color: #a0a0b0;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.fee-calculator__close:hover {
+  color: #fff;
+}
+
+.fee-calculator__content {
+  padding: 16px;
+}
+
+.fee-calculator__section {
+  margin-bottom: 20px;
+}
+
+.fee-calculator__section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: #a0a0b0;
+  font-weight: 500;
+}
+
+.fee-calculator__section h4 svg {
+  color: #8b5cf6;
+}
+
+/* Speed Options */
+.fee-calculator__speed-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.fee-calculator__speed-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  background: #181825;
+  border: 2px solid #313244;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.fee-calculator__speed-btn:hover {
+  border-color: #45475a;
+}
+
+.fee-calculator__speed-btn.active {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.fee-calculator__speed-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fee-calculator__speed-label {
+  font-weight: 600;
+  color: #cdd6f4;
+  font-size: 0.875rem;
+}
+
+.fee-calculator__speed-price {
+  color: #8b5cf6;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.fee-calculator__speed-time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #6c7086;
+}
+
+/* Custom Input */
+.fee-calculator__custom-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fee-calculator__custom-input input {
+  flex: 1;
+  padding: 10px 12px;
+  background: #181825;
+  border: 1px solid #313244;
+  border-radius: 6px;
+  color: #cdd6f4;
+  font-size: 0.875rem;
+}
+
+.fee-calculator__custom-input input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.fee-calculator__custom-unit {
+  color: #6c7086;
+  font-size: 0.875rem;
+}
+
+.fee-calculator__quick-prices {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fee-calculator__quick-label {
+  font-size: 0.75rem;
+  color: #6c7086;
+}
+
+.fee-calculator__quick-btn {
+  padding: 4px 10px;
+  background: #313244;
+  border: none;
+  border-radius: 12px;
+  color: #cdd6f4;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.fee-calculator__quick-btn:hover {
+  background: #45475a;
+}
+
+/* Gas Limit */
+.fee-calculator__gas-limit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fee-calculator__gas-limit input {
+  flex: 1;
+  padding: 10px 12px;
+  background: #181825;
+  border: 1px solid #313244;
+  border-radius: 6px;
+  color: #cdd6f4;
+  font-size: 0.875rem;
+}
+
+.fee-calculator__gas-limit input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.fee-calculator__gas-limit-unit {
+  color: #6c7086;
+  font-size: 0.875rem;
+}
+
+.fee-calculator__gas-presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.fee-calculator__gas-presets button {
+  padding: 4px 8px;
+  background: #313244;
+  border: none;
+  border-radius: 4px;
+  color: #a0a0b0;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fee-calculator__gas-presets button:hover {
+  background: #45475a;
+  color: #cdd6f4;
+}
+
+/* Summary */
+.fee-calculator__summary {
+  background: #181825;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.fee-calculator__summary h4 {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: #cdd6f4;
+}
+
+.fee-calculator__fee-display {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fee-calculator__fee-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #a0a0b0;
+}
+
+.fee-calculator__fee-row--total {
+  font-size: 1rem;
+  color: #cdd6f4;
+}
+
+.fee-calculator__fee-row--total strong {
+  color: #8b5cf6;
+}
+
+.fee-calculator__fee-usd {
+  margin-left: 8px;
+  color: #6c7086;
+  font-size: 0.875rem;
+}
+
+.fee-calculator__fee-divider {
+  height: 1px;
+  background: #313244;
+  margin: 4px 0;
+}
+
+.fee-calculator__notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 0.75rem;
+  color: #6c7086;
+}
+
+.fee-calculator__notice svg {
+  color: #f9e2af;
+}
+
+/* Loading */
+.fee-calculator__loading {
+  text-align: center;
+  padding: 20px;
+  color: #6c7086;
+  font-size: 0.875rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 480px) {
+  .fee-calculator__speed-options {
+    grid-template-columns: 1fr;
+  }
+
+  .fee-calculator__content {
+    padding: 12px;
+  }
+}
