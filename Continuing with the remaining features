@@ -1,0 +1,619 @@
+Continuing with the remaining features:
+
+---
+
+## `src/data/templates.ts` (continued - E-Commerce Template)
+
+```tsx
+const ecommerceFiles: FileNode[] = [
+  {
+    name: 'src',
+    type: 'directory',
+    path: '/src',
+    children: [
+      {
+        name: 'App.tsx',
+        type: 'file',
+        path: '/src/App.tsx',
+        content: `import React, { useState } from 'react';
+import { Navbar } from './components/Navbar';
+import { ProductGrid } from './components/ProductGrid';
+import { Cart } from './components/Cart';
+import { CartProvider } from './context/CartContext';
+
+export default function App() {
+  const [cartOpen, setCartOpen] = useState(false);
+
+  return (
+    <CartProvider>
+      <div className="min-h-screen bg-white">
+        <Navbar onCartClick={() => setCartOpen(true)} />
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Shop All</h1>
+          <ProductGrid />
+        </main>
+        <Cart isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+      </div>
+    </CartProvider>
+  );
+}`,
+      },
+      {
+        name: 'context',
+        type: 'directory',
+        path: '/src/context',
+        children: [
+          {
+            name: 'CartContext.tsx',
+            type: 'file',
+            path: '/src/context/CartContext.tsx',
+            content: `import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+}
+
+interface CartItem extends Product {
+  quantity: number;
+}
+
+interface CartState {
+  items: CartItem[];
+  total: number;
+}
+
+type CartAction =
+  | { type: 'ADD_ITEM'; payload: Product }
+  | { type: 'REMOVE_ITEM'; payload: string }
+  | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
+  | { type: 'CLEAR_CART' };
+
+const CartContext = createContext<{
+  state: CartState;
+  dispatch: React.Dispatch<CartAction>;
+  addToCart: (product: Product) => void;
+  removeFromCart: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
+  itemCount: number;
+} | null>(null);
+
+function cartReducer(state: CartState, action: CartAction): CartState {
+  switch (action.type) {
+    case 'ADD_ITEM': {
+      const existingItem = state.items.find(item => item.id === action.payload.id);
+      let newItems;
+      
+      if (existingItem) {
+        newItems = state.items.map(item =>
+          item.id === action.payload.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        newItems = [...state.items, { ...action.payload, quantity: 1 }];
+      }
+      
+      return {
+        items: newItems,
+        total: newItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      };
+    }
+    case 'REMOVE_ITEM': {
+      const newItems = state.items.filter(item => item.id !== action.payload);
+      return {
+        items: newItems,
+        total: newItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      };
+    }
+    case 'UPDATE_QUANTITY': {
+      const newItems = state.items.map(item =>
+        item.id === action.payload.id
+          ? { ...item, quantity: action.payload.quantity }
+          : item
+      ).filter(item => item.quantity > 0);
+      return {
+        items: newItems,
+        total: newItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      };
+    }
+    case 'CLEAR_CART':
+      return { items: [], total: 0 };
+    default:
+      return state;
+  }
+}
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [state, dispatch] = useReducer(cartReducer, { items: [], total: 0 });
+
+  const addToCart = (product: Product) => dispatch({ type: 'ADD_ITEM', payload: product });
+  const removeFromCart = (id: string) => dispatch({ type: 'REMOVE_ITEM', payload: id });
+  const updateQuantity = (id: string, quantity: number) => 
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, quantity } });
+  const clearCart = () => dispatch({ type: 'CLEAR_CART' });
+  const itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
+
+  return (
+    <CartContext.Provider value={{ state, dispatch, addToCart, removeFromCart, updateQuantity, clearCart, itemCount }}>
+      {children}
+    </CartContext.Provider>
+  );
+}
+
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) throw new Error('useCart must be used within CartProvider');
+  return context;
+};`,
+          },
+        ],
+      },
+      {
+        name: 'components',
+        type: 'directory',
+        path: '/src/components',
+        children: [
+          {
+            name: 'Navbar.tsx',
+            type: 'file',
+            path: '/src/components/Navbar.tsx',
+            content: `import React from 'react';
+import { useCart } from '../context/CartContext';
+
+interface NavbarProps {
+  onCartClick: () => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onCartClick }) => {
+  const { itemCount } = useCart();
+
+  return (
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="/" className="text-2xl font-bold text-gray-900">
+          STORE<span className="text-indigo-600">.</span>
+        </a>
+
+        <div className="hidden md:flex items-center gap-8">
+          <a href="#" className="text-gray-600 hover:text-gray-900">New Arrivals</a>
+          <a href="#" className="text-gray-600 hover:text-gray-900">Women</a>
+          <a href="#" className="text-gray-600 hover:text-gray-900">Men</a>
+          <a href="#" className="text-gray-600 hover:text-gray-900">Sale</a>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <button className="text-gray-600 hover:text-gray-900">
+            🔍
+          </button>
+          <button 
+            onClick={onCartClick}
+            className="relative text-gray-600 hover:text-gray-900"
+          >
+            🛒
+            {itemCount > 0 && (
+              <span className="absolute -top-2 -right-2 w-5 h-5 bg-indigo-600 text-white text-xs rounded-full flex items-center justify-center">
+                {itemCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+};`,
+          },
+          {
+            name: 'ProductGrid.tsx',
+            type: 'file',
+            path: '/src/components/ProductGrid.tsx',
+            content: `import React from 'react';
+import { ProductCard } from './ProductCard';
+
+const products = [
+  { id: '1', name: 'Classic White T-Shirt', price: 29.99, image: '👕', category: 'Tops' },
+  { id: '2', name: 'Slim Fit Jeans', price: 79.99, image: '👖', category: 'Bottoms' },
+  { id: '3', name: 'Leather Jacket', price: 199.99, image: '🧥', category: 'Outerwear' },
+  { id: '4', name: 'Running Sneakers', price: 129.99, image: '👟', category: 'Shoes' },
+  { id: '5', name: 'Wool Beanie', price: 24.99, image: '🧢', category: 'Accessories' },
+  { id: '6', name: 'Canvas Backpack', price: 89.99, image: '🎒', category: 'Bags' },
+  { id: '7', name: 'Sunglasses', price: 149.99, image: '🕶️', category: 'Accessories' },
+  { id: '8', name: 'Watch', price: 249.99, image: '⌚', category: 'Accessories' },
+];
+
+export const ProductGrid: React.FC = () => {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      {products.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+};`,
+          },
+          {
+            name: 'ProductCard.tsx',
+            type: 'file',
+            path: '/src/components/ProductCard.tsx',
+            content: `import React, { useState } from 'react';
+import { useCart } from '../context/CartContext';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+}
+
+export const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const { addToCart } = useCart();
+
+  return (
+    <div
+      className="group cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden mb-4">
+        <div className="w-full h-full flex items-center justify-center text-6xl">
+          {product.image}
+        </div>
+        
+        {isHovered && (
+          <button
+            onClick={() => addToCart(product)}
+            className="absolute bottom-4 left-4 right-4 py-3 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-all"
+          >
+            Add to Cart
+          </button>
+        )}
+      </div>
+
+      <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+        {product.category}
+      </p>
+      <h3 className="text-sm font-medium text-gray-900 mb-1">
+        {product.name}
+      </h3>
+      <p className="text-sm font-semibold text-gray-900">
+        \${product.price.toFixed(2)}
+      </p>
+    </div>
+  );
+};`,
+          },
+          {
+            name: 'Cart.tsx',
+            type: 'file',
+            path: '/src/components/Cart.tsx',
+            content: `import React from 'react';
+import { useCart } from '../context/CartContext';
+
+interface CartProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const Cart: React.FC<CartProps> = ({ isOpen, onClose }) => {
+  const { state, removeFromCart, updateQuantity, clearCart } = useCart();
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div 
+        className="fixed inset-0 bg-black/50 z-50"
+        onClick={onClose}
+      />
+      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white z-50 shadow-xl flex flex-col">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-lg font-semibold">Shopping Cart ({state.items.length})</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            ✕
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6">
+          {state.items.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-6xl mb-4">🛒</p>
+              <p className="text-gray-500">Your cart is empty</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {state.items.map(item => (
+                <div key={item.id} className="flex gap-4">
+                  <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center text-3xl">
+                    {item.image}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900">{item.name}</h3>
+                    <p className="text-sm text-gray-500">\${item.price.toFixed(2)}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="w-8 h-8 border rounded flex items-center justify-center"
+                      >
+                        -
+                      </button>
+                      <span className="w-8 text-center">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="w-8 h-8 border rounded flex items-center justify-center"
+                      >
+                        +
+                      </button>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="ml-auto text-red-500 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {state.items.length > 0 && (
+          <div className="p-6 border-t">
+            <div className="flex justify-between mb-4">
+              <span className="font-medium">Subtotal</span>
+              <span className="font-semibold">\${state.total.toFixed(2)}</span>
+            </div>
+            <button className="w-full py-4 bg-black text-white font-medium rounded-lg hover:bg-gray-800">
+              Checkout
+            </button>
+            <button 
+              onClick={clearCart}
+              className="w-full py-2 text-gray-500 text-sm mt-2"
+            >
+              Clear Cart
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+};`,
+          },
+        ],
+      },
+    ],
+  },
+];
+
+// Export all templates
+export const PROJECT_TEMPLATES: ProjectTemplate[] = [
+  {
+    id: 'landing-page',
+    name: 'Landing Page',
+    description: 'Modern landing page with hero, features, testimonials, pricing, and CTA sections.',
+    category: 'landing',
+    thumbnail: '🚀',
+    tags: ['marketing', 'startup', 'saas'],
+    files: landingPageFiles,
+    isPremium: false,
+  },
+  {
+    id: 'portfolio',
+    name: 'Developer Portfolio',
+    description: 'Professional portfolio with about, projects, skills, and contact sections.',
+    category: 'portfolio',
+    thumbnail: '👨‍💻',
+    tags: ['personal', 'developer', 'resume'],
+    files: portfolioFiles,
+    isPremium: false,
+  },
+  {
+    id: 'ecommerce',
+    name: 'E-Commerce Store',
+    description: 'Full-featured online store with product grid, cart, and checkout.',
+    category: 'ecommerce',
+    thumbnail: '🛒',
+    tags: ['shop', 'retail', 'products'],
+    files: ecommerceFiles,
+    isPremium: true,
+  },
+  {
+    id: 'dashboard',
+    name: 'Admin Dashboard',
+    description: 'Analytics dashboard with charts, tables, and sidebar navigation.',
+    category: 'dashboard',
+    thumbnail: '📊',
+    tags: ['admin', 'analytics', 'management'],
+    files: [], // Add dashboard files
+    isPremium: true,
+  },
+  {
+    id: 'blog',
+    name: 'Blog Platform',
+    description: 'Clean blog with article listings, categories, and markdown support.',
+    category: 'blog',
+    thumbnail: '📝',
+    tags: ['content', 'writing', 'articles'],
+    files: [], // Add blog files
+    isPremium: false,
+  },
+  {
+    id: 'saas-landing',
+    name: 'SaaS Landing',
+    description: 'Conversion-optimized SaaS landing page with pricing tiers.',
+    category: 'saas',
+    thumbnail: '💼',
+    tags: ['business', 'software', 'subscription'],
+    files: [], // Add SaaS files
+    isPremium: true,
+  },
+];
+```
+
+---
+
+## `src/components/Templates/TemplateSelector.tsx`
+
+```tsx
+import React, { useState } from 'react';
+import { Search, Lock, Sparkles, X } from 'lucide-react';
+import { PROJECT_TEMPLATES, type ProjectTemplate } from '../../data/templates';
+import './TemplateSelector.css';
+
+interface TemplateSelectorProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSelectTemplate: (template: ProjectTemplate) => void;
+  isPremiumUser: boolean;
+}
+
+type Category = 'all' | ProjectTemplate['category'];
+
+export const TemplateSelector: React.FC<TemplateSelectorProps> = ({
+  isOpen,
+  onClose,
+  onSelectTemplate,
+  isPremiumUser,
+}) => {
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState<Category>('all');
+
+  const categories: { id: Category; label: string; icon: string }[] = [
+    { id: 'all', label: 'All Templates', icon: '📁' },
+    { id: 'landing', label: 'Landing Pages', icon: '🚀' },
+    { id: 'portfolio', label: 'Portfolios', icon: '👨‍💻' },
+    { id: 'ecommerce', label: 'E-Commerce', icon: '🛒' },
+    { id: 'dashboard', label: 'Dashboards', icon: '📊' },
+    { id: 'blog', label: 'Blogs', icon: '📝' },
+    { id: 'saas', label: 'SaaS', icon: '💼' },
+  ];
+
+  const filteredTemplates = PROJECT_TEMPLATES.filter(template => {
+    const matchesSearch = template.name.toLowerCase().includes(search.toLowerCase()) ||
+      template.description.toLowerCase().includes(search.toLowerCase()) ||
+      template.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
+    
+    const matchesCategory = category === 'all' || template.category === category;
+    
+    return matchesSearch && matchesCategory;
+  });
+
+  const handleSelectTemplate = (template: ProjectTemplate) => {
+    if (template.isPremium && !isPremiumUser) {
+      // Show upgrade prompt
+      alert('This template requires a Pro or Premium subscription');
+      return;
+    }
+    onSelectTemplate(template);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="template-selector__overlay" onClick={onClose}>
+      <div className="template-selector" onClick={e => e.stopPropagation()}>
+        <div className="template-selector__header">
+          <h2>Choose a Template</h2>
+          <button className="template-selector__close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="template-selector__search">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="Search templates..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+
+        <div className="template-selector__body">
+          <nav className="template-selector__categories">
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                className={`template-selector__category ${category === cat.id ? 'active' : ''}`}
+                onClick={() => setCategory(cat.id)}
+              >
+                <span>{cat.icon}</span>
+                <span>{cat.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          <div className="template-selector__grid">
+            {/* Blank Project */}
+            <button
+              className="template-card template-card--blank"
+              onClick={() => onSelectTemplate({
+                id: 'blank',
+                name: 'Blank Project',
+                description: 'Start from scratch',
+                category: 'landing',
+                thumbnail: '➕',
+                tags: [],
+                files: [],
+                isPremium: false,
+              })}
+            >
+              <div className="template-card__preview">
+                <span className="text-4xl">➕</span>
+              </div>
+              <div className="template-card__info">
+                <h3>Blank Project</h3>
+                <p>Start from scratch with AI assistance</p>
+              </div>
+            </button>
+
+            {filteredTemplates.map(template => (
+              <button
+                key={template.id}
+                className={`template-card ${template.isPremium && !isPremiumUser ? 'template-card--locked' : ''}`}
+                onClick={() => handleSelectTemplate(template)}
+              >
+                {template.isPremium && (
+                  <div className="template-card__badge">
+                    <Sparkles size={12} />
+                    Premium
+                  </div>
+                )}
+                
+                <div className="template-card__preview">
+                  <span className="text-5xl">{template.thumbnail}</span>
+                  {template.isPremium && !isPremiumUser && (
+                    <div className="template-card__lock">
+                      <Lock size={24} />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="template-card__info">
+                  <h3>{template.name}</h3>
+                  <p>{template.description}</p>
+                  <div className="template-card__tags">
+                    {template.tags.slice(0, 3).map(tag => (
+                      <span key={tag}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## `src/components/Templates/TemplateSelecto
