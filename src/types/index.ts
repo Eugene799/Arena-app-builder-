@@ -245,3 +245,61 @@ export interface RateLimitState {
   reset: number;
   blocked: boolean;
 }
+
+// Fullstack Configuration types
+export type DatabaseType = 'postgresql' | 'mysql' | 'mongodb' | 'supabase' | 'neon' | 'none';
+
+export type BackendRuntime = 'nodejs' | 'bun' | 'deno';
+
+export type BackendFramework = 'express' | 'fastify' | 'nestjs' | 'nextjs' | 'none';
+
+export interface EnvVariable {
+  id: string;
+  key: string;
+  value: string;
+  description: string;
+  isSecret: boolean;
+  environment: 'development' | 'staging' | 'production';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DatabaseConnection {
+  id: string;
+  type: DatabaseType;
+  name: string;
+  host: string;
+  port: number;
+  database: string;
+  username: string;
+  password: string;
+  connectionString?: string;
+  ssl: boolean;
+  isConnected: boolean;
+  lastTested?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface BackendConfig {
+  id: string;
+  runtime: BackendRuntime;
+  framework: BackendFramework;
+  port: number;
+  startScript: string;
+  installScript: string;
+  buildScript: string;
+  customDependencies: Record<string, string>;
+  environment: 'development' | 'staging' | 'production';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface FullStackConfig {
+  projectId: string;
+  envVariables: EnvVariable[];
+  databaseConnections: DatabaseConnection[];
+  backendConfig: BackendConfig;
+  createdAt: Date;
+  updatedAt: Date;
+}

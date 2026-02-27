@@ -1,4 +1,4 @@
-import type { Project, AppSettings, APIKeys, OnboardingProgress } from '../types';
+import type { Project, AppSettings, APIKeys, OnboardingProgress, FullStackConfig } from '../types';
 
 const STORAGE_KEYS = {
   PROJECTS: 'arena_projects',
@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   ONBOARDING_PROGRESS: 'arena_onboarding_progress',
   MESSAGES_USED: 'arena_messages_used',
   APPS_CREATED: 'arena_apps_created',
+  FULLSTACK_CONFIG: 'arena_fullstack_config',
 };
 
 class StorageService {
@@ -212,6 +213,40 @@ class StorageService {
     Object.values(STORAGE_KEYS).forEach(key => {
       localStorage.removeItem(key);
     });
+  }
+
+  saveFullStackConfig(config: FullStackConfig): void {
+    const configs = this.getAllFullStackConfigs();
+    const existingIndex = configs.findIndex(c => c.projectId === config.projectId);
+    
+    if (existingIndex >= 0) {
+      configs[existingIndex] = { ...config, updatedAt: new Date() };
+    } else {
+      configs.push({ ...config, createdAt: new Date(), updatedAt: new Date() });
+    }
+    
+    localStorage.setItem(STORAGE_KEYS.FULLSTACK_CONFIG, JSON.stringify(configs));
+  }
+
+  getFullStackConfig(projectId: string): FullStackConfig | null {
+    const configs = this.getAllFullStackConfigs();
+    return configs.find(c => c.projectId === projectId) || null;
+  }
+
+  getAllFullStackConfigs(): FullStackConfig[] {
+    const data = localStorage.getItem(STORAGE_KEYS.FULLSTACK_CONFIG);
+    if (!data) return [];
+    
+    try {
+      return JSON.parse(data);
+    } catch {
+      return [];
+    }
+  }
+
+  deleteFullStackConfig(projectId: string): void {
+    const configs = this.getAllFullStackConfigs().filter(c => c.projectId !== projectId);
+    localStorage.setItem(STORAGE_KEYS.FULLSTACK_CONFIG, JSON.stringify(configs));
   }
 }
 
