@@ -192,6 +192,10 @@ export interface TemplateCategory {
 
 // App configuration types
 export interface AppConfig {
+  app: {
+    name: string;
+    url: string;
+  };
   api: {
     groqKey: string;
     geminiKey: string;
@@ -221,6 +225,23 @@ export interface AppConfig {
     processingFeeFixed: number;
     gasBufferPercent: number;
   };
+}
+
+// Suggested environment variables for dApp building
+export interface SuggestedEnvVar {
+  key: string;
+  description: string;
+  category: 'blockchain-rpc' | 'external-api' | 'database' | 'auth' | 'storage';
+  isSecret: boolean;
+  defaultValue?: string;
+}
+
+export interface SuggestedEnvVarCategory {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  variables: SuggestedEnvVar[];
 }
 
 // Validation types
