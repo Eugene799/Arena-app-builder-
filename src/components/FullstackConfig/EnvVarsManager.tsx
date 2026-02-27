@@ -10,8 +10,13 @@ import {
   RefreshCw,
   Check,
   X,
+  Lightbulb,
+  Database,
+  Globe,
+  Server,
+  Link,
 } from 'lucide-react';
-import type { EnvVariable } from '../../types';
+import type { EnvVariable, SuggestedEnvVar, SuggestedEnvVarCategory } from '../../types';
 import './FullstackConfig.css';
 
 interface EnvVarsManagerProps {
@@ -21,12 +26,99 @@ interface EnvVarsManagerProps {
 
 const generateId = () => Math.random().toString(36).substring(2, 11);
 
+/**
+ * Suggested environment variables for dApp building.
+ * These are OPTIONAL suggestions for users building dApps, not required for the builder itself.
+ */
+const SUGGESTED_ENV_VAR_CATEGORIES: SuggestedEnvVarCategory[] = [
+  {
+    id: 'blockchain-rpc',
+    name: 'Blockchain RPC URLs',
+    description: 'RPC endpoints for connecting to various blockchain networks',
+    icon: 'Globe',
+    variables: [
+      { key: 'SEPOLIA_RPC_URL', description: 'Ethereum Sepolia testnet RPC endpoint', category: 'blockchain-rpc', isSecret: false },
+      { key: 'BASE_RPC_URL', description: 'Base mainnet RPC endpoint', category: 'blockchain-rpc', isSecret: false },
+      { key: 'SOLANA_RPC_URL', description: 'Solana RPC endpoint (e.g., Helius, QuickNode)', category: 'blockchain-rpc', isSecret: false },
+      { key: 'AVAX_RPC_URL', description: 'Avalanche C-Chain RPC endpoint', category: 'blockchain-rpc', isSecret: false },
+      { key: 'POLYGON_RPC_URL', description: 'Polygon mainnet RPC endpoint', category: 'blockchain-rpc', isSecret: false },
+      { key: 'ARBITRUM_RPC_URL', description: 'Arbitrum One RPC endpoint', category: 'blockchain-rpc', isSecret: false },
+    ],
+  },
+  {
+    id: 'external-api',
+    name: 'External API Keys',
+    description: 'API keys for external services and providers',
+    icon: 'Server',
+    variables: [
+      { key: 'ALCHEMY_API_KEY', description: 'Alchemy API key for enhanced blockchain access', category: 'external-api', isSecret: true },
+      { key: 'QUICKNODE_API_KEY', description: 'QuickNode API key for dedicated RPC access', category: 'external-api', isSecret: true },
+      { key: 'INFURA_API_KEY', description: 'Infura API key for Ethereum access', category: 'external-api', isSecret: true },
+      { key: 'MORALIS_API_KEY', description: 'Moralis API key for Web3 data', category: 'external-api', isSecret: true },
+      { key: 'COINBASE_COMMERCE_KEY', description: 'Coinbase Commerce API key for payments', category: 'external-api', isSecret: true },
+    ],
+  },
+  {
+    id: 'database',
+    name: 'Database Connections',
+    description: 'Connection strings and credentials for database services',
+    icon: 'Database',
+    variables: [
+      { key: 'SUPABASE_URL', description: 'Supabase project URL', category: 'database', isSecret: false },
+      { key: 'SUPABASE_ANON_KEY', description: 'Supabase anonymous key for client-side access', category: 'database', isSecret: true },
+      { key: 'SUPABASE_SERVICE_ROLE_KEY', description: 'Supabase service role key for admin access', category: 'database', isSecret: true },
+      { key: 'NEON_CONNECTION_STRING', description: 'Neon PostgreSQL connection string', category: 'database', isSecret: true },
+      { key: 'PLANETSCALE_URL', description: 'PlanetScale database URL', category: 'database', isSecret: true },
+      { key: 'MONGODB_URI', description: 'MongoDB connection URI', category: 'database', isSecret: true },
+      { key: 'REDIS_URL', description: 'Redis connection URL', category: 'database', isSecret: true },
+    ],
+  },
+  {
+    id: 'auth',
+    name: 'Authentication',
+    description: 'Authentication provider credentials',
+    icon: 'Key',
+    variables: [
+      { key: 'NEXTAUTH_SECRET', description: 'NextAuth.js secret key for JWT signing', category: 'auth', isSecret: true },
+      { key: 'NEXTAUTH_URL', description: 'NextAuth.js callback URL', category: 'auth', isSecret: false },
+      { key: 'AUTH0_DOMAIN', description: 'Auth0 tenant domain', category: 'auth', isSecret: false },
+      { key: 'AUTH0_CLIENT_ID', description: 'Auth0 application client ID', category: 'auth', isSecret: false },
+      { key: 'AUTH0_CLIENT_SECRET', description: 'Auth0 application client secret', category: 'auth', isSecret: true },
+    ],
+  },
+  {
+    id: 'storage',
+    name: 'File Storage',
+    description: 'Decentralized and cloud storage providers',
+    icon: 'Link',
+    variables: [
+      { key: 'PINATA_API_KEY', description: 'Pinata API key for IPFS uploads', category: 'storage', isSecret: true },
+      { key: 'PINATA_SECRET_KEY', description: 'Pinata secret key for IPFS', category: 'storage', isSecret: true },
+      { key: 'AWS_ACCESS_KEY_ID', description: 'AWS access key for S3 storage', category: 'storage', isSecret: true },
+      { key: 'AWS_SECRET_ACCESS_KEY', description: 'AWS secret key for S3 storage', category: 'storage', isSecret: true },
+      { key: 'AWS_S3_BUCKET', description: 'AWS S3 bucket name', category: 'storage', isSecret: false },
+    ],
+  },
+];
+
+const getCategoryIcon = (iconName: string) => {
+  switch (iconName) {
+    case 'Globe': return Globe;
+    case 'Server': return Server;
+    case 'Database': return Database;
+    case 'Key': return Key;
+    case 'Link': return Link;
+    default: return Key;
+  }
+};
+
 export const EnvVarsManager: React.FC<EnvVarsManagerProps> = ({
   envVariables,
   onChange,
 }) => {
   const [showValues, setShowValues] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [newVar, setNewVar] = useState<Partial<EnvVariable>>({
     key: '',
     value: '',
@@ -46,6 +138,38 @@ export const EnvVarsManager: React.FC<EnvVarsManagerProps> = ({
       return next;
     });
   }, []);
+
+  const toggleCategory = useCallback((categoryId: string) => {
+    setExpandedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(categoryId)) {
+        next.delete(categoryId);
+      } else {
+        next.add(categoryId);
+      }
+      return next;
+    });
+  }, []);
+
+  const addSuggestedVariable = useCallback((suggested: SuggestedEnvVar) => {
+    const now = new Date();
+    const variable: EnvVariable = {
+      id: generateId(),
+      key: suggested.key,
+      value: suggested.defaultValue || '',
+      description: suggested.description,
+      isSecret: suggested.isSecret,
+      environment: 'development',
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    onChange([...envVariables, variable]);
+  }, [envVariables, onChange]);
+
+  const isVariableAdded = useCallback((key: string) => {
+    return envVariables.some(v => v.key === key);
+  }, [envVariables]);
 
   const addVariable = useCallback(() => {
     if (!newVar.key?.trim()) return;
@@ -281,6 +405,89 @@ export const EnvVarsManager: React.FC<EnvVarsManagerProps> = ({
           <span>{envVariables.filter(v => v.isSecret).length} secret{envVariables.filter(v => v.isSecret).length !== 1 ? 's' : ''}</span>
         </div>
       )}
+
+      {/* Suggested Variables for dApp Building */}
+      <div className="env-vars-manager__suggestions">
+        <div className="env-vars-manager__suggestions-header">
+          <Lightbulb size={18} />
+          <h4>Suggested Variables for dApps</h4>
+          <span className="env-vars-manager__suggestions-subtitle">
+            Optional suggestions for your project
+          </span>
+        </div>
+        
+        <div className="env-vars-manager__categories">
+          {SUGGESTED_ENV_VAR_CATEGORIES.map(category => {
+            const CategoryIcon = getCategoryIcon(category.icon);
+            const isExpanded = expandedCategories.has(category.id);
+            const addedCount = category.variables.filter(v => isVariableAdded(v.key)).length;
+            
+            return (
+              <div key={category.id} className="env-vars-manager__category">
+                <button
+                  className="env-vars-manager__category-header"
+                  onClick={() => toggleCategory(category.id)}
+                >
+                  <CategoryIcon size={16} />
+                  <span className="env-vars-manager__category-name">{category.name}</span>
+                  <span className="env-vars-manager__category-count">
+                    {addedCount}/{category.variables.length}
+                  </span>
+                  <span className="env-vars-manager__category-desc">{category.description}</span>
+                  <span className={`env-vars-manager__category-chevron ${isExpanded ? 'expanded' : ''}`}>
+                    ▼
+                  </span>
+                </button>
+                
+                {isExpanded && (
+                  <div className="env-vars-manager__category-variables">
+                    {category.variables.map(variable => {
+                      const isAdded = isVariableAdded(variable.key);
+                      
+                      return (
+                        <div
+                          key={variable.key}
+                          className={`env-vars-manager__suggested-var ${isAdded ? 'added' : ''}`}
+                        >
+                          <div className="env-vars-manager__suggested-var-info">
+                            <span className="env-vars-manager__suggested-var-key">
+                              {variable.key}
+                              {variable.isSecret && (
+                                <EyeOff size={12} className="env-vars-manager__suggested-secret-icon" />
+                              )}
+                            </span>
+                            <span className="env-vars-manager__suggested-var-desc">
+                              {variable.description}
+                            </span>
+                          </div>
+                          <button
+                            className="env-vars-manager__suggested-add-btn"
+                            onClick={() => addSuggestedVariable(variable)}
+                            disabled={isAdded}
+                            title={isAdded ? 'Already added' : 'Add to your variables'}
+                          >
+                            {isAdded ? (
+                              <>
+                                <Check size={14} />
+                                Added
+                              </>
+                            ) : (
+                              <>
+                                <Plus size={14} />
+                                Add
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 };
