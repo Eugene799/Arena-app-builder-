@@ -1,3 +1,5 @@
+import type { ChainConfig, WalletConnector } from '../types';
+
 interface AppConfig {
   api: {
     groqKey: string;
@@ -18,6 +20,7 @@ interface AppConfig {
     onboardingEnabled: boolean;
     feeCalculatorEnabled: boolean;
     templatesEnabled: boolean;
+    multiChainWalletEnabled: boolean;
   };
   rateLimit: {
     maxRequests: number;
@@ -27,6 +30,13 @@ interface AppConfig {
     processingFeePercent: number;
     processingFeeFixed: number;
     gasBufferPercent: number;
+  };
+  reown: {
+    projectId: string;
+    appName: string;
+    appDescription: string;
+    appUrl: string;
+    appIcon: string;
   };
 }
 
@@ -65,6 +75,7 @@ export const appConfig: AppConfig = {
     onboardingEnabled: getEnvBool('VITE_ENABLE_ONBOARDING', true),
     feeCalculatorEnabled: getEnvBool('VITE_SHOW_FEE_CALCULATOR', true),
     templatesEnabled: getEnvBool('VITE_ENABLE_TEMPLATES', true),
+    multiChainWalletEnabled: getEnvBool('VITE_ENABLE_MULTICHAIN_WALLET', true),
   },
   rateLimit: {
     maxRequests: getEnvNum('VITE_RATE_LIMIT_REQUESTS', 100),
@@ -74,6 +85,13 @@ export const appConfig: AppConfig = {
     processingFeePercent: 2.9,
     processingFeeFixed: 0.30,
     gasBufferPercent: 10,
+  },
+  reown: {
+    projectId: getEnvVar('VITE_REOWN_PROJECT_ID', ''),
+    appName: 'Arena AI Builder',
+    appDescription: 'Build and deploy multi-chain dApps with AI',
+    appUrl: typeof window !== 'undefined' ? window.location.origin : 'https://arena-ai-builder.com',
+    appIcon: 'https://arena-ai-builder.com/icon.png',
   },
 };
 
@@ -95,6 +113,129 @@ export const getApiKey = (provider: string): string => {
 
 export const hasApiKey = (provider: string): boolean => {
   return !!getApiKey(provider);
+};
+
+// Multi-Chain Configurations
+export const supportedChains: ChainConfig[] = [
+  {
+    id: 1,
+    name: 'Ethereum Mainnet',
+    type: 'ethereum',
+    namespace: 'eip155',
+    currency: 'ETH',
+    explorerUrl: 'https://etherscan.io',
+    rpcUrl: 'https://ethereum.publicnode.com',
+  },
+  {
+    id: 11155111,
+    name: 'Ethereum Sepolia',
+    type: 'ethereum',
+    namespace: 'eip155',
+    currency: 'ETH',
+    explorerUrl: 'https://sepolia.etherscan.io',
+    rpcUrl: 'https://ethereum-sepolia.publicnode.com',
+    testnet: true,
+  },
+  {
+    id: 8453,
+    name: 'Base Mainnet',
+    type: 'base',
+    namespace: 'eip155',
+    currency: 'ETH',
+    explorerUrl: 'https://basescan.org',
+    rpcUrl: 'https://mainnet.base.org',
+  },
+  {
+    id: 84532,
+    name: 'Base Sepolia',
+    type: 'base',
+    namespace: 'eip155',
+    currency: 'ETH',
+    explorerUrl: 'https://sepolia.basescan.org',
+    rpcUrl: 'https://sepolia.base.org',
+    testnet: true,
+  },
+  {
+    id: '5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+    name: 'Solana Mainnet',
+    type: 'solana',
+    namespace: 'solana',
+    currency: 'SOL',
+    explorerUrl: 'https://explorer.solana.com',
+    rpcUrl: 'https://api.mainnet-beta.solana.com',
+  },
+  {
+    id: 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1',
+    name: 'Solana Devnet',
+    type: 'solana',
+    namespace: 'solana',
+    currency: 'SOL',
+    explorerUrl: 'https://explorer.solana.com/?cluster=devnet',
+    rpcUrl: 'https://api.devnet.solana.com',
+    testnet: true,
+  },
+  {
+    id: '000000000019d6689c085ae165831e93',
+    name: 'Bitcoin Mainnet',
+    type: 'bitcoin',
+    namespace: 'bip122',
+    currency: 'BTC',
+    explorerUrl: 'https://mempool.space',
+  },
+  {
+    id: '000000000933ea01ad0ee984209779ba',
+    name: 'Bitcoin Testnet',
+    type: 'bitcoin',
+    namespace: 'bip122',
+    currency: 'BTC',
+    explorerUrl: 'https://mempool.space/testnet',
+    testnet: true,
+  },
+  {
+    id: '-239',
+    name: 'TON Mainnet',
+    type: 'ton',
+    namespace: 'ton',
+    currency: 'TON',
+    explorerUrl: 'https://tonscan.org',
+    rpcUrl: 'https://toncenter.com/api/v2/jsonRPC',
+  },
+  {
+    id: '-3',
+    name: 'TON Testnet',
+    type: 'ton',
+    namespace: 'ton',
+    currency: 'TON',
+    explorerUrl: 'https://testnet.tonscan.org',
+    rpcUrl: 'https://testnet.toncenter.com/api/v2/jsonRPC',
+    testnet: true,
+  },
+];
+
+export const defaultSupportedWallets: WalletConnector[] = [
+  'metamask',
+  'rainbow',
+  'coinbase',
+  'walletconnect',
+  'phantom',
+  'okx',
+  'trust',
+];
+
+export const getChainConfig = (chainId: number | string): ChainConfig | undefined => {
+  return supportedChains.find(chain => chain.id === chainId);
+};
+
+export const getChainConfigByType = (type: ChainType): ChainConfig | undefined => {
+  return supportedChains.find(chain => chain.type === type && !chain.testnet);
+};
+
+export const getTestnetConfig = (type: ChainType): ChainConfig | undefined => {
+  return supportedChains.find(chain => chain.type === type && chain.testnet === true);
+};
+
+export const isReownConfigured = (): boolean => {
+  return !!appConfig.reown.projectId;
 };
 
 export default appConfig;

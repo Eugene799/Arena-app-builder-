@@ -246,6 +246,59 @@ export interface RateLimitState {
   blocked: boolean;
 }
 
+// Multi-Chain Wallet Types
+export type ChainType = 'ethereum' | 'base' | 'solana' | 'bitcoin' | 'ton';
+
+export type ChainNamespace = 'eip155' | 'solana' | 'bip122' | 'ton';
+
+export interface ChainConfig {
+  id: number | string;
+  name: string;
+  type: ChainType;
+  namespace: ChainNamespace;
+  currency: string;
+  explorerUrl: string;
+  rpcUrl?: string;
+  testnet?: boolean;
+}
+
+export type WalletConnector = 'metamask' | 'rainbow' | 'coinbase' | 'walletconnect' | 'phantom' | 'okx' | 'trust';
+
+export interface WalletConnection {
+  isConnected: boolean;
+  address: string | null;
+  chainId: number | string | null;
+  chainType: ChainType | null;
+  connector: WalletConnector | null;
+  balance: string | null;
+}
+
+export interface AppKitConfig {
+  projectId: string;
+  chains: ChainConfig[];
+  defaultChain: ChainType;
+  enableWallets: WalletConnector[];
+  metadata: {
+    name: string;
+    description: string;
+    url: string;
+    icons: string[];
+  };
+}
+
+export interface WalletTransaction {
+  to: string;
+  value: string;
+  data?: string;
+  chainId?: number | string;
+}
+
+export interface WalletSignature {
+  message: string;
+  signature: string;
+  address: string;
+}
+
 // Fullstack Configuration types
 export type DatabaseType = 'postgresql' | 'mysql' | 'mongodb' | 'supabase' | 'neon' | 'none';
 

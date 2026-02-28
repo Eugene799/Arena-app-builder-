@@ -1,0 +1,175 @@
+/* AppKit Provider Styles */
+.appkit-provider {
+  width: 100%;
+  height: 100%;
+}
+
+/* AppKit Modal Customization */
+:global(w3m-modal) {
+  --w3m-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  --w3m-accent-color: #3b82f6;
+  --w3m-accent-fill-color: #ffffff;
+  --w3m-border-radius-master: 12px;
+}
+
+:global(w3m-modal[theme='dark']) {
+  --w3m-background-color: #1a1a2e;
+  --w3m-container-background-color: #16213e;
+  --w3m-text-color: #ffffff;
+  --w3m-text-secondary-color: #a0a0a0;
+}
+
+/* Wallet Connect Button Styles */
+.appkit-connect-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.appkit-connect-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.appkit-connect-btn:active {
+  transform: translateY(0);
+}
+
+.appkit-connect-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Connected Account Button */
+.appkit-account-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.appkit-account-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+/* Chain Badge */
+.appkit-chain-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.appkit-chain-badge--ethereum {
+  background: rgba(98, 126, 234, 0.2);
+  color: #627eea;
+}
+
+.appkit-chain-badge--base {
+  background: rgba(0, 82, 255, 0.2);
+  color: #0052ff;
+}
+
+.appkit-chain-badge--solana {
+  background: rgba(20, 241, 149, 0.2);
+  color: #14f195;
+}
+
+.appkit-chain-badge--bitcoin {
+  background: rgba(247, 147, 26, 0.2);
+  color: #f7931a;
+}
+
+.appkit-chain-badge--ton {
+  background: rgba(0, 136, 204, 0.2);
+  color: #0088cc;
+}
+
+/* Wallet Icon */
+.appkit-wallet-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+/* Loading State */
+.appkit-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #a0a0a0;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.appkit-loading::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: appkit-spin 0.8s linear infinite;
+}
+
+@keyframes appkit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error State */
+.appkit-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .appkit-connect-btn,
+  .appkit-account-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .appkit-chain-badge {
+    display: none;
+  }
+}
