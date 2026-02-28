@@ -6,12 +6,14 @@ import {
   Server,
   Save,
   RotateCcw,
+  Store,
 } from 'lucide-react';
-import type { FullStackConfig, EnvVariable, DatabaseConnection, BackendConfig } from '../../types';
+import type { FullStackConfig, EnvVariable, DatabaseConnection, BackendConfig, ArenaAppConfig } from '../../types';
 import { storageService } from '../../services/storageService';
 import { EnvVarsManager } from './EnvVarsManager';
 import { DatabaseIntegration } from './DatabaseIntegration';
 import { BackendConfiguration } from './BackendConfig';
+import { ArenaAppIntegration } from './ArenaAppIntegration';
 import './FullstackConfig.css';
 
 interface FullstackConfigPanelProps {
@@ -20,7 +22,21 @@ interface FullstackConfigPanelProps {
   onClose: () => void;
 }
 
-type TabType = 'env' | 'database' | 'backend';
+type TabType = 'env' | 'database' | 'backend' | 'arena';
+
+const createDefaultArenaConfig = (): ArenaAppConfig => ({
+  id: Math.random().toString(36).substring(2, 11),
+  enabled: false,
+  appName: '',
+  appDescription: '',
+  port: 3481,
+  enableWagmiConnector: false,
+  enableWalletSupport: false,
+  enableProfileSupport: false,
+  enableTransactions: false,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+});
 
 const createDefaultBackendConfig = (): BackendConfig => ({
   id: Math.random().toString(36).substring(2, 11),
@@ -41,6 +57,7 @@ const createDefaultFullStackConfig = (projectId: string): FullStackConfig => ({
   envVariables: [],
   databaseConnections: [],
   backendConfig: createDefaultBackendConfig(),
+  arenaConfig: createDefaultArenaConfig(),
   createdAt: new Date(),
   updatedAt: new Date(),
 });
@@ -89,6 +106,12 @@ export const FullstackConfigPanel: React.FC<FullstackConfigPanelProps> = ({
     setSaveStatus('idle');
   }, []);
 
+  const handleArenaConfigChange = useCallback((arenaConfig: ArenaAppConfig) => {
+    setConfig(prev => ({ ...prev, arenaConfig }));
+    setHasChanges(true);
+    setSaveStatus('idle');
+  }, []);
+
   const handleSave = useCallback(() => {
     setSaveStatus('saving');
     
@@ -118,6 +141,7 @@ export const FullstackConfigPanel: React.FC<FullstackConfigPanelProps> = ({
     { id: 'env' as TabType, label: 'Environment Variables', icon: Key, count: config.envVariables.length },
     { id: 'database' as TabType, label: 'Database', icon: Database, count: config.databaseConnections.length },
     { id: 'backend' as TabType, label: 'Backend', icon: Server, count: 0 },
+    { id: 'arena' as TabType, label: 'Arena App Store', icon: Store, count: config.arenaConfig?.enabled ? 1 : 0 },
   ];
 
   return (
@@ -172,6 +196,13 @@ export const FullstackConfigPanel: React.FC<FullstackConfigPanelProps> = ({
             <BackendConfiguration
               backendConfig={config.backendConfig}
               onChange={handleBackendConfigChange}
+            />
+          )}
+          
+          {activeTab === 'arena' && (
+            <ArenaAppIntegration
+              arenaConfig={config.arenaConfig}
+              onChange={handleArenaConfigChange}
             />
           )}
         </div>
