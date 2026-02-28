@@ -7,6 +7,7 @@ import {
   Save,
   RotateCcw,
   Store,
+  Sparkles,
 } from 'lucide-react';
 import type { FullStackConfig, EnvVariable, DatabaseConnection, BackendConfig, ArenaAppConfig } from '../../types';
 import { storageService } from '../../services/storageService';
@@ -14,6 +15,7 @@ import { EnvVarsManager } from './EnvVarsManager';
 import { DatabaseIntegration } from './DatabaseIntegration';
 import { BackendConfiguration } from './BackendConfig';
 import { ArenaAppIntegration } from './ArenaAppIntegration';
+import { PlatformsGuide } from './PlatformsGuide';
 import './FullstackConfig.css';
 
 interface FullstackConfigPanelProps {
@@ -22,7 +24,7 @@ interface FullstackConfigPanelProps {
   onClose: () => void;
 }
 
-type TabType = 'env' | 'database' | 'backend' | 'arena';
+type TabType = 'env' | 'database' | 'backend' | 'arena' | 'platforms';
 
 const createDefaultArenaConfig = (): ArenaAppConfig => ({
   id: Math.random().toString(36).substring(2, 11),
@@ -142,6 +144,7 @@ export const FullstackConfigPanel: React.FC<FullstackConfigPanelProps> = ({
     { id: 'database' as TabType, label: 'Database', icon: Database, count: config.databaseConnections.length },
     { id: 'backend' as TabType, label: 'Backend', icon: Server, count: 0 },
     { id: 'arena' as TabType, label: 'Arena App Store', icon: Store, count: config.arenaConfig?.enabled ? 1 : 0 },
+    { id: 'platforms' as TabType, label: 'Platforms Guide', icon: Sparkles, count: 0 },
   ];
 
   return (
@@ -203,6 +206,13 @@ export const FullstackConfigPanel: React.FC<FullstackConfigPanelProps> = ({
             <ArenaAppIntegration
               arenaConfig={config.arenaConfig}
               onChange={handleArenaConfigChange}
+            />
+          )}
+
+          {activeTab === 'platforms' && (
+            <PlatformsGuide
+              envVariables={config.envVariables}
+              onChange={handleEnvVariablesChange}
             />
           )}
         </div>
