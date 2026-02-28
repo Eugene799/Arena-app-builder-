@@ -348,11 +348,25 @@ export interface BackendConfig {
   updatedAt: Date;
 }
 
+export interface ArenaAppConfig {
+  enabled: boolean;
+  appName: string;
+  appDescription: string;
+  port: number;
+  enableWagmiConnector: boolean;
+  enableWalletSupport: boolean;
+  enableProfileSupport: boolean;
+  enableTransactions: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface FullStackConfig {
   projectId: string;
   envVariables: EnvVariable[];
   databaseConnections: DatabaseConnection[];
   backendConfig: BackendConfig;
+  arenaConfig?: ArenaAppConfig;
   createdAt: Date;
   updatedAt: Date;
 }

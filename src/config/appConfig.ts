@@ -21,6 +21,7 @@ interface AppConfig {
     feeCalculatorEnabled: boolean;
     templatesEnabled: boolean;
     multiChainWalletEnabled: boolean;
+    arenaSdkEnabled: boolean;
   };
   rateLimit: {
     maxRequests: number;
@@ -76,6 +77,7 @@ export const appConfig: AppConfig = {
     feeCalculatorEnabled: getEnvBool('VITE_SHOW_FEE_CALCULATOR', true),
     templatesEnabled: getEnvBool('VITE_ENABLE_TEMPLATES', true),
     multiChainWalletEnabled: getEnvBool('VITE_ENABLE_MULTICHAIN_WALLET', true),
+    arenaSdkEnabled: getEnvBool('VITE_ARENA_SDK_ENABLED', true),
   },
   rateLimit: {
     maxRequests: getEnvNum('VITE_RATE_LIMIT_REQUESTS', 100),
